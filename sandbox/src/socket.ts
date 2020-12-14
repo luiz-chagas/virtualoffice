@@ -1,5 +1,5 @@
 export const connectToServer = () => {
-  const socket = io("localhost:8080", {
+  const socket = io({
     transports: ["websocket"],
   });
   return { socket };

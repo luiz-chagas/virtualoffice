@@ -4,9 +4,9 @@
   "description": "Virtual Office Space",
   "main": "",
   "scripts": {
-    "start": "",
-    "build": "",
-    "postinstall": ""
+    "start": "cd server/build && node server.js",
+    "build": "(cd sandbox && npm run build); (cd server && npm run build);",
+    "postinstall": "(cd sandbox && npm install); (cd server && npm install);"
   },
   "repository": {
     "type": "git",

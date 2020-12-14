@@ -2,7 +2,6 @@ import commonjs from "rollup-plugin-commonjs";
 import resolve from "rollup-plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import serve from "rollup-plugin-serve";
-import builtins from "rollup-plugin-node-builtins";
 import typescript from "rollup-plugin-typescript2";
 
 export default {
