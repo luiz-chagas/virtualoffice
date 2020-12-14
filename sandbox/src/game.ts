@@ -1,7 +1,19 @@
-import "phaser";
+import Phaser from "phaser";
+import { connectToServer } from "./socket";
+interface PlayerData {
+  id: string;
+  x: number;
+  y: number;
+  facing: "north" | "south" | "east" | "west";
+}
 
-let player: Phaser.Physics.Arcade.Sprite;
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+let lastUpdate = -Infinity;
+let lastPos = { x: 0, y: 0, facing: "south" };
+
+const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
+const gameStateData: Record<string, PlayerData> = {};
+const { socket } = connectToServer();
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -28,13 +40,7 @@ export default class GameScene extends Phaser.Scene {
         "ground-wood"
       )
       .setOrigin(0)
-      .setTileScale(0.1);
-
-    player = this.physics.add
-      .sprite(100, 100, "atlas", "misa-front")
-      .setCollideWorldBounds(true)
-      .setSize(30, 40)
-      .setOffset(0, 24);
+      .setTileScale(0.15);
 
     const anims = this.anims;
     anims.create({
@@ -82,8 +88,7 @@ export default class GameScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    const camera = this.cameras.main
-      .startFollow(player)
+    this.cameras.main
       .setZoom(2)
       .setBounds(
         0,
@@ -93,10 +98,32 @@ export default class GameScene extends Phaser.Scene {
       );
 
     cursors = this.input.keyboard.createCursorKeys();
+
+    socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
+      Object.entries(dataState).forEach(([id, playerData]) => {
+        gameStateData[id] = playerData;
+        if (!gameState[id]) {
+          gameState[id] = this.physics.add
+            .sprite(50, 50, "atlas", "misa-front")
+            .setCollideWorldBounds(true)
+            .setSize(30, 40)
+            .setOrigin(0.5)
+            .setOffset(0, 0);
+        }
+      });
+    });
   }
 
   update(time, delta) {
-    const speed = 175;
+    let player = gameState[socket.id];
+
+    if (!player) {
+      return;
+    }
+
+    this.cameras.main.startFollow(player);
+
+    const speed = 100;
     const prevVelocity = player.body.velocity.clone();
 
     const body = player.body as Phaser.Physics.Arcade.Body;
@@ -122,22 +149,65 @@ export default class GameScene extends Phaser.Scene {
     body.velocity.normalize().scale(speed);
 
     // Update the animation last and give left/right animations precedence over up/down animations
+    let facing = "";
     if (cursors.left.isDown) {
+      facing = "west";
       player.anims.play("misa-left-walk", true);
     } else if (cursors.right.isDown) {
+      facing = "east";
       player.anims.play("misa-right-walk", true);
     } else if (cursors.up.isDown) {
+      facing = "north";
       player.anims.play("misa-back-walk", true);
     } else if (cursors.down.isDown) {
+      facing = "south";
       player.anims.play("misa-front-walk", true);
     } else {
       player.anims.stop();
-
       // If we were moving, pick and idle frame to use
-      if (prevVelocity.x < 0) player.setTexture("atlas", "misa-left");
-      else if (prevVelocity.x > 0) player.setTexture("atlas", "misa-right");
-      else if (prevVelocity.y < 0) player.setTexture("atlas", "misa-back");
-      else if (prevVelocity.y > 0) player.setTexture("atlas", "misa-front");
+      if (prevVelocity.x < 0) {
+        facing = "west";
+        player.setTexture("atlas", "misa-left");
+      } else if (prevVelocity.x > 0) {
+        facing = "east";
+        player.setTexture("atlas", "misa-right");
+      } else if (prevVelocity.y < 0) {
+        facing = "north";
+        player.setTexture("atlas", "misa-back");
+      } else if (prevVelocity.y > 0) {
+        facing = "south";
+        player.setTexture("atlas", "misa-front");
+      }
+    }
+
+    Object.entries(gameState).forEach(([id, otherPlayer]) => {
+      if (id === socket.id) {
+        return;
+      }
+      const textures = {
+        west: "misa-left",
+        east: "misa-right",
+        north: "misa-back",
+        south: "misa-front",
+      };
+      otherPlayer.setX(gameStateData[id].x);
+      otherPlayer.setY(gameStateData[id].y);
+      otherPlayer.setTexture(
+        "atlas",
+        textures[gameStateData[id].facing || "south"]
+      );
+    });
+
+    if (time > lastUpdate + 33) {
+      lastUpdate = time;
+      if (body.x !== lastPos.x || body.y !== lastPos.y) {
+        lastPos = {
+          x: body.x,
+          y: body.y,
+          facing,
+        };
+        socket.emit("move", lastPos);
+      }
     }
   }
 }
