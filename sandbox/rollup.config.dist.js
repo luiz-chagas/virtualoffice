@@ -1,7 +1,7 @@
 import commonjs from "rollup-plugin-commonjs";
 import resolve from "rollup-plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
-import { uglify } from "rollup-plugin-uglify";
+import { terser } from "rollup-plugin-terser";
 import typescript from "rollup-plugin-typescript2";
 import injectProcessEnv from "rollup-plugin-inject-process-env";
 
@@ -37,6 +37,12 @@ export default {
       extensions: [".ts"],
     }),
 
+    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
+    typescript({
+      typescript: require("typescript"),
+      objectHashIgnoreUnknownHack: true,
+    }),
+
     //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
     commonjs({
       include: ["node_modules/eventemitter3/**", "node_modules/phaser/**"],
@@ -45,16 +51,10 @@ export default {
       ignoreGlobal: true,
     }),
 
-    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
-    typescript(),
-
     injectProcessEnv({
       NODE_ENV: "production",
     }),
 
-    //  See https://www.npmjs.com/package/rollup-plugin-uglify for config options
-    uglify({
-      mangle: false,
-    }),
+    terser(),
   ],
 };
