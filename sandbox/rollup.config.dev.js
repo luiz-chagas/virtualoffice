@@ -3,6 +3,7 @@ import resolve from "rollup-plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import serve from "rollup-plugin-serve";
 import typescript from "rollup-plugin-typescript2";
+import injectProcessEnv from "rollup-plugin-inject-process-env";
 
 export default {
   //  Our games entry point (edit as required)
@@ -15,7 +16,7 @@ export default {
   output: {
     dir: "dist",
     file: "game.js",
-    name: "Phaser",
+    name: "OurSpace",
     format: "iife",
     sourcemap: false,
     intro: "var global = window;",
@@ -32,13 +33,13 @@ export default {
       "typeof FEATURE_SOUND": JSON.stringify(true),
     }),
 
-    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
-    typescript(),
-
     //  Parse our .ts source files
     resolve({
       extensions: [".ts"],
     }),
+
+    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
+    typescript(),
 
     //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
     commonjs({
@@ -46,6 +47,10 @@ export default {
       exclude: ["node_modules/phaser/src/polyfills/requestAnimationFrame.js"],
       sourceMap: true,
       ignoreGlobal: true,
+    }),
+
+    injectProcessEnv({
+      NODE_ENV: "development",
     }),
 
     //  See https://www.npmjs.com/package/rollup-plugin-serve for config options

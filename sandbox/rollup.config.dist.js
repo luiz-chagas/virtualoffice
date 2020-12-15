@@ -3,6 +3,7 @@ import resolve from "rollup-plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import { uglify } from "rollup-plugin-uglify";
 import typescript from "rollup-plugin-typescript2";
+import injectProcessEnv from "rollup-plugin-inject-process-env";
 
 export default {
   //  Our games entry point (edit as required)
@@ -13,8 +14,9 @@ export default {
   //  You can also use 'umd' if you need to ingest your game into another system.
   //  The 'intro' property can be removed if using Phaser 3.21 or above. Keep it for earlier versions.
   output: {
-    file: "./dist/game.js",
-    name: "MyGame",
+    dir: "dist",
+    file: "game.js",
+    name: "OurSpace",
     format: "iife",
     sourcemap: false,
     intro: "var global = window;",
@@ -33,7 +35,7 @@ export default {
 
     //  Parse our .ts source files
     resolve({
-      extensions: [".ts", ".tsx"],
+      extensions: [".ts"],
     }),
 
     //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
@@ -46,6 +48,10 @@ export default {
 
     //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
     typescript(),
+
+    injectProcessEnv({
+      NODE_ENV: "production",
+    }),
 
     //  See https://www.npmjs.com/package/rollup-plugin-uglify for config options
     uglify({
