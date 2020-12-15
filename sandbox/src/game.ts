@@ -9,10 +9,11 @@ interface PlayerData {
 
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let lastUpdate = -Infinity;
+let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
-const gameStateData: Record<string, PlayerData> = {};
+let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
 
 export default class GameScene extends Phaser.Scene {
@@ -100,15 +101,15 @@ export default class GameScene extends Phaser.Scene {
     cursors = this.input.keyboard.createCursorKeys();
 
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
+      serverStateData = dataState;
       Object.entries(dataState).forEach(([id, playerData]) => {
-        gameStateData[id] = playerData;
         if (!gameState[id]) {
           gameState[id] = this.physics.add
-            .sprite(50, 50, "atlas", "misa-front")
+            .sprite(playerData.x, playerData.y - 24, "atlas", "misa-front")
             .setCollideWorldBounds(true)
             .setSize(30, 40)
-            .setOrigin(0.5)
-            .setOffset(0, 0);
+            .setOrigin(0)
+            .setOffset(0, 24);
         }
       });
     });
@@ -180,21 +181,24 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
+    const textures = {
+      west: "misa-left",
+      east: "misa-right",
+      north: "misa-back",
+      south: "misa-front",
+    };
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
       if (id === socket.id) {
         return;
       }
-      const textures = {
-        west: "misa-left",
-        east: "misa-right",
-        north: "misa-back",
-        south: "misa-front",
-      };
-      otherPlayer.setX(gameStateData[id].x);
-      otherPlayer.setY(gameStateData[id].y);
+      if (!serverStateData[id]) {
+        return;
+      }
+      otherPlayer.setX(serverStateData[id].x);
+      otherPlayer.setY(serverStateData[id].y - 24);
       otherPlayer.setTexture(
         "atlas",
-        textures[gameStateData[id].facing || "south"]
+        textures[serverStateData[id].facing || "south"]
       );
     });
 
@@ -208,6 +212,21 @@ export default class GameScene extends Phaser.Scene {
         };
         socket.emit("move", lastPos);
       }
+    }
+
+    if (time > lastGarbageColleted + 1000) {
+      lastGarbageColleted = time;
+      const players = Object.keys(serverStateData);
+      const toDelete: string[] = [];
+      Object.entries(gameState).forEach(([id, playerSprite]) => {
+        if (!players.includes(id)) {
+          toDelete.push(id);
+        }
+      });
+      toDelete.forEach((id) => {
+        gameState[id].destroy();
+        delete gameState[id];
+      });
     }
   }
 }
@@ -229,7 +248,7 @@ new Phaser.Game({
   physics: {
     default: "arcade",
     arcade: {
-      debug: false,
+      debug: true,
       height: 1000,
       width: 1000,
     },
