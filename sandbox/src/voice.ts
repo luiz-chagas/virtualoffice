@@ -9,11 +9,21 @@ let myStream: Promise<MediaStream>;
 export const setupHandlers = (socket: SocketIOClient.Socket) => {
   const handleOffer = async ({ name, target, sdp }: OfferPayload) => {
     const myPeerConnection = await createPeerConnection(name);
-    connections[name] = myPeerConnection;
     const desc = new RTCSessionDescription(sdp);
     await myPeerConnection.setRemoteDescription(desc);
+    connections[name] = myPeerConnection;
     const answer = await myPeerConnection.createAnswer();
     await myPeerConnection.setLocalDescription(answer);
+    myPeerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("new-ice-candidate", {
+          type: "new-ice-candidate",
+          name: target,
+          target: name,
+          candidate: event.candidate,
+        });
+      }
+    };
     socket.emit("audio-answer", {
       name: target,
       target: name,
@@ -34,6 +44,10 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
 
   const handleHangUp = ({ userId }: { userId: string }) => {
     removeStreamFromDOM(userId);
+  };
+
+  const handleAnswer = ({ name, sdp }: AnswerPayload) => {
+    connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
   };
 
   const makeOffer = async (target: string) => {
@@ -67,6 +81,7 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
   myStream = navigator.mediaDevices.getUserMedia(mediaConstraints);
 
   socket.on("audio-offer", handleOffer);
+  socket.on("audio-answer", handleAnswer);
   socket.on("new-ice-candidate", handleIceCandidate);
   socket.on("hang-up", handleHangUp);
 
