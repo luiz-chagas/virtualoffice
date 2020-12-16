@@ -2,6 +2,7 @@ import http from "http";
 import io from "socket.io";
 import { app } from "./express";
 import { makePlayersService } from "./services/players";
+import { makeSignalingService } from "./services/signaling";
 
 const port = Number(process.env.PORT) || 8080;
 app.set("port", port);
@@ -12,6 +13,7 @@ const socketServer = new io.Server(server, {
 });
 
 makePlayersService(socketServer);
+makeSignalingService(socketServer);
 
 const onError = (error: any) => {
   if (error.syscall !== "listen") {

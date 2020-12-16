@@ -32,10 +32,6 @@ export const makePlayersService = (socketServer: Server) => {
   };
 
   socketServer.on("connection", (socket) => {
-    if (!socket.request.headers.origin) {
-      return;
-    }
-
     addPlayer(socket.id);
 
     socket.on("disconnect", () => {

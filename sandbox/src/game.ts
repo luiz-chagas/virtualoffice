@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { connectToServer } from "./socket";
+import { setupHandlers } from "./voice";
 interface PlayerData {
   id: string;
   x: number;
@@ -15,6 +16,7 @@ let lastPos = { x: 0, y: 0, facing: "south" };
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
+const { makeOffer } = setupHandlers(socket);
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -104,6 +106,9 @@ export default class GameScene extends Phaser.Scene {
       serverStateData = dataState;
       Object.entries(dataState).forEach(([id, playerData]) => {
         if (!gameState[id]) {
+          if (socket.id !== id) {
+            makeOffer(id);
+          }
           gameState[id] = this.physics.add
             .sprite(playerData.x, playerData.y - 24, "atlas", "misa-front")
             .setCollideWorldBounds(true)
