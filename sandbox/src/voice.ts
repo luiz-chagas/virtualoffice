@@ -120,6 +120,7 @@ const addStreamToDOM = (userId: string, stream: MediaStream) => {
   mediaElement.volume = 1;
   mediaElement.id = userId;
   mediaElement.srcObject = stream;
+  mediaElement.autoplay = true;
 };
 
 const removeStreamFromDOM = (userId: string) => {
