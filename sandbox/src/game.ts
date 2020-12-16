@@ -193,14 +193,26 @@ export default class GameScene extends Phaser.Scene {
       south: "misa-front",
     };
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
+      const err = 3;
       if (id === socket.id) {
         return;
       }
       if (!serverStateData[id]) {
         return;
       }
-      otherPlayer.setX(serverStateData[id].x);
-      otherPlayer.setY(serverStateData[id].y - 24);
+      otherPlayer.setVelocity(0);
+      if (otherPlayer.x < serverStateData[id].x - err) {
+        otherPlayer.setVelocityX(speed);
+      } else if (otherPlayer.x > serverStateData[id].x + err) {
+        otherPlayer.setVelocityX(-speed);
+      }
+      if (otherPlayer.y + 24 > serverStateData[id].y + err) {
+        otherPlayer.setVelocityY(-speed);
+      }
+      if (otherPlayer.y + 24 < serverStateData[id].y - err) {
+        otherPlayer.setVelocityY(speed);
+      }
+      body.velocity.normalize().scale(speed);
       otherPlayer.setTexture(
         "atlas",
         textures[serverStateData[id].facing || "south"]
