@@ -65,14 +65,9 @@ export default class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({ key: "map" });
     const groundTileset = map.addTilesetImage("Ground", "ground");
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
-    const groundLayer = map.createStaticLayer("Ground", groundTileset, 0, 0);
+    const groundLayer = map.createStaticLayer("Ground", groundTileset);
     groundLayer.setCollisionByProperty({ collides: true });
-    const furnitureLayer = map.createStaticLayer(
-      "Furniture",
-      furnitureTileset,
-      0,
-      0
-    );
+    const furnitureLayer = map.createStaticLayer("Furniture", furnitureTileset);
     furnitureLayer.setCollisionByProperty({ collides: true });
 
     const animationManager = this.anims;
@@ -102,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
           gameState[id] = this.physics.add
             .sprite(playerData.x, playerData.y, playerData.avatar, 0)
             .setCollideWorldBounds(true)
-            .setDisplaySize(32, 32)
+            .setDisplaySize(40, 40)
             .setOrigin(0);
           if (id === socket.id) {
             this.physics.add.collider(gameState[id], groundLayer);
