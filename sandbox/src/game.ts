@@ -25,7 +25,7 @@ const DIR_FRAMES = {
   north: 12,
   south: 0,
 };
-const SPEED = 150;
+const SPEED = 125;
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -34,7 +34,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("ground-wood", "assets/wood.png");
+    this.load.image(
+      "furniture",
+      "assets/world/d3f7sm6-00fc3673-65fd-4ca5-9fc5-f61783440edf.png"
+    );
+    this.load.image(
+      "ground",
+      "assets/world/d4becnf-37d112e7-aaf7-4c8d-9568-b474d452c114.png"
+    );
+    this.load.tilemapTiledJSON("map", "assets/world/LoftMap.json");
     this.load.spritesheet("player1", "assets/player/char1.png", {
       frameWidth: 68,
       frameHeight: 72,
@@ -54,16 +62,18 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.add
-      .tileSprite(
-        0,
-        0,
-        this.physics.world.bounds.width,
-        this.physics.world.bounds.height,
-        "ground-wood"
-      )
-      .setOrigin(0)
-      .setTileScale(0.15);
+    const map = this.make.tilemap({ key: "map" });
+    const groundTileset = map.addTilesetImage("Ground", "ground");
+    const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
+    const groundLayer = map.createStaticLayer("Ground", groundTileset, 0, 0);
+    groundLayer.setCollisionByProperty({ collides: true });
+    const furnitureLayer = map.createStaticLayer(
+      "Furniture",
+      furnitureTileset,
+      0,
+      0
+    );
+    furnitureLayer.setCollisionByProperty({ collides: true });
 
     const animationManager = this.anims;
     registerAnimations("player1", animationManager);
@@ -92,8 +102,12 @@ export default class GameScene extends Phaser.Scene {
           gameState[id] = this.physics.add
             .sprite(playerData.x, playerData.y, playerData.avatar, 0)
             .setCollideWorldBounds(true)
-            .setDisplaySize(45, 45)
+            .setDisplaySize(32, 32)
             .setOrigin(0);
+          if (id === socket.id) {
+            this.physics.add.collider(gameState[id], groundLayer);
+            this.physics.add.collider(gameState[id], furnitureLayer);
+          }
         }
       });
     });
@@ -272,8 +286,8 @@ new Phaser.Game({
     default: "arcade",
     arcade: {
       debug: process.env.NODE_ENV === "development",
-      height: 1000,
-      width: 1000,
+      height: 640,
+      width: 960,
     },
   },
 });
