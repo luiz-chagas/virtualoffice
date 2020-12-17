@@ -97,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
           gameState[id] = this.physics.add
             .sprite(playerData.x, playerData.y, playerData.avatar, 0)
             .setCollideWorldBounds(true)
-            .setDisplaySize(40, 40)
+            .setDisplaySize(30, 30)
             .setOrigin(0);
           if (id === socket.id) {
             this.physics.add.collider(gameState[id], groundLayer);
