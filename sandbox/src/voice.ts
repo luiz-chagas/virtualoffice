@@ -7,11 +7,50 @@ const connections: Record<string, RTCPeerConnection> = {};
 let myStream: Promise<MediaStream>;
 
 export const setupHandlers = (socket: SocketIOClient.Socket) => {
+  const makeOffer = async (target: string) => {
+    if (connections[target]) {
+      return;
+    }
+    const myPeerConnection = await createPeerConnection(target);
+    myPeerConnection.onnegotiationneeded = async () => {
+      const offer = await myPeerConnection.createOffer();
+      if (myPeerConnection.signalingState !== "stable") {
+        return;
+      }
+      await myPeerConnection.setLocalDescription(offer);
+      socket.emit("audio-offer", {
+        name: socket.id,
+        target: target,
+        type: "audio-offer",
+        sdp: myPeerConnection.localDescription,
+      });
+    };
+    myPeerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("new-ice-candidate", {
+          type: "new-ice-candidate",
+          name: socket.id,
+          target: target,
+          candidate: event.candidate,
+        });
+      }
+    };
+  };
+
   const handleOffer = async ({ name, target, sdp }: OfferPayload) => {
     const myPeerConnection = await createPeerConnection(name);
     const desc = new RTCSessionDescription(sdp);
-    await myPeerConnection.setRemoteDescription(desc);
-    connections[name] = myPeerConnection;
+    if (myPeerConnection.signalingState !== "stable") {
+      // Set the local and remove descriptions for rollback; don't proceed
+      // until both return.
+      await Promise.all([
+        myPeerConnection.setLocalDescription({ type: "rollback" }),
+        myPeerConnection.setRemoteDescription(desc),
+      ]);
+      return;
+    } else {
+      await myPeerConnection.setRemoteDescription(desc);
+    }
     const answer = await myPeerConnection.createAnswer();
     await myPeerConnection.setLocalDescription(answer);
     myPeerConnection.onicecandidate = (event) => {
@@ -23,6 +62,19 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
           candidate: event.candidate,
         });
       }
+    };
+    myPeerConnection.onnegotiationneeded = async () => {
+      const offer = await myPeerConnection.createOffer();
+      if (myPeerConnection.signalingState !== "stable") {
+        return;
+      }
+      await myPeerConnection.setLocalDescription(offer);
+      socket.emit("audio-offer", {
+        name: target,
+        target: name,
+        type: "audio-offer",
+        sdp: myPeerConnection.localDescription,
+      });
     };
     socket.emit("audio-answer", {
       name: target,
@@ -50,34 +102,6 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
     connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
   };
 
-  const makeOffer = async (target: string) => {
-    if (connections[target]) {
-      return;
-    }
-    const myPeerConnection = await createPeerConnection(target);
-    connections[target] = myPeerConnection;
-    myPeerConnection.onnegotiationneeded = async () => {
-      const offer = await myPeerConnection.createOffer();
-      await myPeerConnection.setLocalDescription(offer);
-      socket.emit("audio-offer", {
-        name: socket.id,
-        target: target,
-        type: "audio-offer",
-        sdp: myPeerConnection.localDescription,
-      });
-    };
-    myPeerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("new-ice-candidate", {
-          type: "new-ice-candidate",
-          name: socket.id,
-          target: target,
-          candidate: event.candidate,
-        });
-      }
-    };
-  };
-
   myStream = navigator.mediaDevices.getUserMedia(mediaConstraints);
 
   socket.on("audio-offer", handleOffer);
@@ -89,6 +113,9 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
 };
 
 const createPeerConnection = async (target: string) => {
+  if (connections[target]) {
+    return connections[target];
+  }
   const connection = new RTCPeerConnection({
     iceServers: [
       {
@@ -96,6 +123,7 @@ const createPeerConnection = async (target: string) => {
       },
     ],
   });
+  connections[target] = connection;
   const stream = await myStream;
   stream.getTracks().forEach((track) => connection.addTrack(track));
   connection.ontrack = (data) => {
