@@ -5,6 +5,7 @@ interface PlayerData {
   id: string;
   x: number;
   y: number;
+  avatar: string;
   facing: "north" | "south" | "east" | "west";
 }
 
@@ -18,6 +19,14 @@ let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
 const { makeOffer } = setupHandlers(socket);
 
+const DIR_FRAMES = {
+  west: 4,
+  east: 8,
+  north: 12,
+  south: 0,
+};
+const SPEED = 150;
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super("gameScene");
@@ -26,11 +35,22 @@ export default class GameScene extends Phaser.Scene {
 
   preload() {
     this.load.image("ground-wood", "assets/wood.png");
-    this.load.atlas(
-      "atlas",
-      "assets/player/atlas.png",
-      "assets/player/atlas.json"
-    );
+    this.load.spritesheet("player1", "assets/player/char1.png", {
+      frameWidth: 68,
+      frameHeight: 72,
+    });
+    this.load.spritesheet("player2", "assets/player/char2.png", {
+      frameWidth: 68,
+      frameHeight: 72,
+    });
+    this.load.spritesheet("player3", "assets/player/char3.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
+    this.load.spritesheet("player4", "assets/player/char4.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
   }
 
   create() {
@@ -45,54 +65,14 @@ export default class GameScene extends Phaser.Scene {
       .setOrigin(0)
       .setTileScale(0.15);
 
-    const anims = this.anims;
-    anims.create({
-      key: "misa-left-walk",
-      frames: anims.generateFrameNames("atlas", {
-        prefix: "misa-left-walk.",
-        start: 0,
-        end: 3,
-        zeroPad: 3,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-    anims.create({
-      key: "misa-right-walk",
-      frames: anims.generateFrameNames("atlas", {
-        prefix: "misa-right-walk.",
-        start: 0,
-        end: 3,
-        zeroPad: 3,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-    anims.create({
-      key: "misa-front-walk",
-      frames: anims.generateFrameNames("atlas", {
-        prefix: "misa-front-walk.",
-        start: 0,
-        end: 3,
-        zeroPad: 3,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-    anims.create({
-      key: "misa-back-walk",
-      frames: anims.generateFrameNames("atlas", {
-        prefix: "misa-back-walk.",
-        start: 0,
-        end: 3,
-        zeroPad: 3,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
+    const animationManager = this.anims;
+    registerAnimations("player1", animationManager);
+    registerAnimations("player2", animationManager);
+    registerAnimations("player3", animationManager);
+    registerAnimations("player4", animationManager);
 
     this.cameras.main
-      .setZoom(2)
+      .setZoom(1.5)
       .setBounds(
         0,
         0,
@@ -110,11 +90,10 @@ export default class GameScene extends Phaser.Scene {
             makeOffer(id);
           }
           gameState[id] = this.physics.add
-            .sprite(playerData.x, playerData.y - 24, "atlas", "misa-front")
+            .sprite(playerData.x, playerData.y, playerData.avatar, 0)
             .setCollideWorldBounds(true)
-            .setSize(30, 40)
-            .setOrigin(0)
-            .setOffset(0, 24);
+            .setDisplaySize(45, 45)
+            .setOrigin(0);
         }
       });
     });
@@ -122,6 +101,7 @@ export default class GameScene extends Phaser.Scene {
 
   update(time, delta) {
     let player = gameState[socket.id];
+    const myData = serverStateData[socket.id];
 
     if (!player) {
       return;
@@ -129,7 +109,6 @@ export default class GameScene extends Phaser.Scene {
 
     this.cameras.main.startFollow(player);
 
-    const speed = 100;
     const prevVelocity = player.body.velocity.clone();
 
     const body = player.body as Phaser.Physics.Arcade.Body;
@@ -139,61 +118,56 @@ export default class GameScene extends Phaser.Scene {
 
     // Horizontal movement
     if (cursors.left.isDown) {
-      body.setVelocityX(-speed);
+      body.setVelocityX(-SPEED);
     } else if (cursors.right.isDown) {
-      body.setVelocityX(speed);
+      body.setVelocityX(SPEED);
     }
 
     // Vertical movement
     if (cursors.up.isDown) {
-      body.setVelocityY(-speed);
+      body.setVelocityY(-SPEED);
     } else if (cursors.down.isDown) {
-      body.setVelocityY(speed);
+      body.setVelocityY(SPEED);
     }
 
     // Normalize and scale the velocity so that player can't move faster along a diagonal
-    body.velocity.normalize().scale(speed);
+    body.velocity.normalize().scale(SPEED);
 
     // Update the animation last and give left/right animations precedence over up/down animations
     let facing = "";
     if (cursors.left.isDown) {
       facing = "west";
-      player.anims.play("misa-left-walk", true);
+      player.anims.play(`${myData.avatar}-left-walk`, true);
     } else if (cursors.right.isDown) {
       facing = "east";
-      player.anims.play("misa-right-walk", true);
+      player.anims.play(`${myData.avatar}-right-walk`, true);
     } else if (cursors.up.isDown) {
       facing = "north";
-      player.anims.play("misa-back-walk", true);
+      player.anims.play(`${myData.avatar}-back-walk`, true);
     } else if (cursors.down.isDown) {
       facing = "south";
-      player.anims.play("misa-front-walk", true);
+      player.anims.play(`${myData.avatar}-front-walk`, true);
     } else {
       player.anims.stop();
       // If we were moving, pick and idle frame to use
       if (prevVelocity.x < 0) {
         facing = "west";
-        player.setTexture("atlas", "misa-left");
+        player.setTexture(myData.avatar, DIR_FRAMES.west);
       } else if (prevVelocity.x > 0) {
         facing = "east";
-        player.setTexture("atlas", "misa-right");
+        player.setTexture(myData.avatar, DIR_FRAMES.east);
       } else if (prevVelocity.y < 0) {
         facing = "north";
-        player.setTexture("atlas", "misa-back");
+        player.setTexture(myData.avatar, DIR_FRAMES.north);
       } else if (prevVelocity.y > 0) {
         facing = "south";
-        player.setTexture("atlas", "misa-front");
+        player.setTexture(myData.avatar, DIR_FRAMES.south);
       }
     }
 
-    const textures = {
-      west: "misa-left",
-      east: "misa-right",
-      north: "misa-back",
-      south: "misa-front",
-    };
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
       const err = 3;
+      let isMoving = false;
       if (id === socket.id) {
         return;
       }
@@ -202,21 +176,53 @@ export default class GameScene extends Phaser.Scene {
       }
       otherPlayer.setVelocity(0);
       if (otherPlayer.x < serverStateData[id].x - err) {
-        otherPlayer.setVelocityX(speed);
+        otherPlayer.setVelocityX(SPEED);
+        if (!isMoving) {
+          otherPlayer.anims.play(
+            `${serverStateData[id].avatar}-right-walk`,
+            true
+          );
+        }
+        isMoving = true;
       } else if (otherPlayer.x > serverStateData[id].x + err) {
-        otherPlayer.setVelocityX(-speed);
+        otherPlayer.setVelocityX(-SPEED);
+        if (!isMoving) {
+          otherPlayer.anims.play(
+            `${serverStateData[id].avatar}-left-walk`,
+            true
+          );
+        }
+        isMoving = true;
       }
-      if (otherPlayer.y + 24 > serverStateData[id].y + err) {
-        otherPlayer.setVelocityY(-speed);
+      if (otherPlayer.y > serverStateData[id].y + err) {
+        otherPlayer.setVelocityY(-SPEED);
+        if (!isMoving) {
+          otherPlayer.anims.play(
+            `${serverStateData[id].avatar}-back-walk`,
+            true
+          );
+        }
+        isMoving = true;
+      } else if (otherPlayer.y < serverStateData[id].y - err) {
+        otherPlayer.setVelocityY(SPEED);
+        if (!isMoving) {
+          otherPlayer.anims.play(
+            `${serverStateData[id].avatar}-front-walk`,
+            true
+          );
+        }
+        isMoving = true;
       }
-      if (otherPlayer.y + 24 < serverStateData[id].y - err) {
-        otherPlayer.setVelocityY(speed);
+      if (!isMoving) {
+        otherPlayer.anims.stop();
+        if (serverStateData[id].facing) {
+          otherPlayer.setTexture(
+            serverStateData[id].avatar,
+            DIR_FRAMES[serverStateData[id].facing]
+          );
+        }
       }
-      body.velocity.normalize().scale(speed);
-      otherPlayer.setTexture(
-        "atlas",
-        textures[serverStateData[id].facing || "south"]
-      );
+      body.velocity.normalize().scale(SPEED);
     });
 
     if (time > lastUpdate + 33) {
@@ -271,3 +277,45 @@ new Phaser.Game({
     },
   },
 });
+
+const registerAnimations = (
+  name: string,
+  manager: Phaser.Animations.AnimationManager
+) => {
+  manager.create({
+    key: `${name}-left-walk`,
+    frames: manager.generateFrameNames(name, {
+      start: 4,
+      end: 7,
+    }),
+    frameRate: 10,
+    repeat: -1,
+  });
+  manager.create({
+    key: `${name}-right-walk`,
+    frames: manager.generateFrameNames(name, {
+      start: 8,
+      end: 11,
+    }),
+    frameRate: 10,
+    repeat: -1,
+  });
+  manager.create({
+    key: `${name}-front-walk`,
+    frames: manager.generateFrameNames(name, {
+      start: 0,
+      end: 3,
+    }),
+    frameRate: 10,
+    repeat: -1,
+  });
+  manager.create({
+    key: `${name}-back-walk`,
+    frames: manager.generateFrameNames(name, {
+      start: 12,
+      end: 15,
+    }),
+    frameRate: 10,
+    repeat: -1,
+  });
+};

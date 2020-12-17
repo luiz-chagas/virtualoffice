@@ -5,7 +5,13 @@ interface Player {
   x: number;
   y: number;
   facing: "north" | "south" | "east" | "west";
+  avatar: string;
 }
+
+const getRandomAvatar = () => {
+  const number = Math.floor(Math.random() * 4) + 1;
+  return `player${number}`;
+};
 
 export const makePlayersService = (socketServer: Server) => {
   const players: Record<string, Player> = {};
@@ -16,6 +22,7 @@ export const makePlayersService = (socketServer: Server) => {
       x: 0,
       y: 0,
       facing: "south",
+      avatar: getRandomAvatar(),
     };
   };
 
