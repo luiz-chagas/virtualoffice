@@ -72,7 +72,7 @@ export default class GameScene extends Phaser.Scene {
     registerAnimations("player4", animationManager);
 
     this.cameras.main
-      .setZoom(1.5)
+      .setZoom(1.75)
       .setBounds(
         0,
         0,
