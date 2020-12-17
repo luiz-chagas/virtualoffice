@@ -18,6 +18,7 @@ const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
 const { makeOffer } = setupHandlers(socket);
+let isInitialData = true;
 
 const DIR_FRAMES = {
   west: 4,
@@ -91,7 +92,7 @@ export default class GameScene extends Phaser.Scene {
       serverStateData = dataState;
       Object.entries(dataState).forEach(([id, playerData]) => {
         if (!gameState[id]) {
-          if (socket.id !== id) {
+          if (socket.id !== id && isInitialData) {
             makeOffer(id);
           }
           gameState[id] = this.physics.add
@@ -105,6 +106,7 @@ export default class GameScene extends Phaser.Scene {
           }
         }
       });
+      isInitialData = false;
     });
   }
 
