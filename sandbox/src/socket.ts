@@ -7,8 +7,15 @@ export const connectToServer = () => {
       : io({
           transports: ["websocket"],
         });
+  updatePlayerName(socket);
+  return { socket };
+};
+
+const updatePlayerName = (socket: SocketIOClient.Socket) => {
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get("name");
-  socket.emit("name", name);
-  return { socket };
+  if (name) {
+    return socket.emit("name", name);
+  }
+  setTimeout(() => updatePlayerName(socket), 100);
 };
