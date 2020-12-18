@@ -7,5 +7,8 @@ export const connectToServer = () => {
       : io({
           transports: ["websocket"],
         });
+  const urlParams = new URLSearchParams(window.location.search);
+  const name = urlParams.get("name");
+  socket.emit("name", name);
   return { socket };
 };

@@ -6,6 +6,7 @@ interface Player {
   y: number;
   facing: "north" | "south" | "east" | "west";
   avatar: string;
+  name: string;
 }
 
 const getRandomAvatar = () => {
@@ -23,6 +24,7 @@ export const makePlayersService = (socketServer: Server) => {
       y: 580,
       facing: "south",
       avatar: getRandomAvatar(),
+      name: "",
     };
   };
 
@@ -30,7 +32,7 @@ export const makePlayersService = (socketServer: Server) => {
     delete players[socketId];
   };
 
-  const updatePlayer = (socketId: string, playerData: Player) => {
+  const updatePlayer = (socketId: string, playerData: Partial<Player>) => {
     players[socketId] = Object.assign({}, players[socketId], playerData);
   };
 
@@ -51,6 +53,10 @@ export const makePlayersService = (socketServer: Server) => {
 
     socket.on("move", (playerData: Player) => {
       updatePlayer(socket.id, playerData);
+    });
+
+    socket.on("name", (name: string) => {
+      updatePlayer(socket.id, { name: name.trim().substring(0, 12) });
     });
   });
 

@@ -6,6 +6,7 @@ interface PlayerData {
   x: number;
   y: number;
   avatar: string;
+  name: string;
   facing: "north" | "south" | "east" | "west";
 }
 
@@ -43,6 +44,7 @@ export default class GameScene extends Phaser.Scene {
       "furniture2",
       "assets/world/darwtlj-dda4428b-1a3f-422e-81c5-f7844b267d68.png"
     );
+    this.load.image("furniture3", "assets/world/more-furniture.png");
     this.load.image(
       "ground",
       "assets/world/d4becnf-37d112e7-aaf7-4c8d-9568-b474d452c114.png"
@@ -71,14 +73,19 @@ export default class GameScene extends Phaser.Scene {
     const groundTileset = map.addTilesetImage("Ground", "ground");
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
     const furniture2Tileset = map.addTilesetImage("Furniture2", "furniture2");
+    const furniture3Tileset = map.addTilesetImage("Furniture3", "furniture3");
     const floorLayer = map.createStaticLayer("Floor", groundTileset);
     const wallsLayer = map.createStaticLayer("Walls", groundTileset);
     wallsLayer.setCollisionByProperty({ collides: true });
-    const objectsLayer = map.createStaticLayer("Objects", furniture2Tileset);
+    const objectsLayer = map.createStaticLayer("Objects", [
+      furniture2Tileset,
+      furniture3Tileset,
+    ]);
     objectsLayer.setDepth(10);
     const furnitureLayer = map.createStaticLayer("Furniture", [
       furnitureTileset,
       furniture2Tileset,
+      furniture3Tileset,
     ]);
     furnitureLayer.setCollisionByProperty({ collides: true });
 
@@ -107,7 +114,17 @@ export default class GameScene extends Phaser.Scene {
             .sprite(playerData.x, playerData.y, playerData.avatar, 0)
             .setCollideWorldBounds(true)
             .setDisplaySize(30, 30)
-            .setOrigin(0);
+            .setOrigin(0)
+            .setData(
+              "name",
+              this.add
+                .text(playerData.x + 15, playerData.y - 10, playerData.name, {
+                  font: "16px Courier",
+                  fill: "#48fb00",
+                })
+                .setOrigin(0.5)
+                .setDepth(20)
+            );
           if (isInitialData) {
             if (id === socket.id) {
               this.physics.add.collider(gameState[id], wallsLayer);
@@ -189,60 +206,54 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
+    player.getData("name").setPosition(player.x + 15, player.y - 10);
+
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
+      const otherPlayerData = serverStateData[id];
       const err = 3;
       let isMoving = false;
       if (id === socket.id) {
         return;
       }
-      if (!serverStateData[id]) {
+      if (!otherPlayerData) {
         return;
       }
+      otherPlayer
+        .getData("name")
+        .setPosition(otherPlayerData.x + 15, otherPlayerData.y - 10);
       otherPlayer.setVelocity(0);
-      if (otherPlayer.x < serverStateData[id].x - err) {
+      if (otherPlayer.x < otherPlayerData.x - err) {
         otherPlayer.setVelocityX(SPEED);
         if (!isMoving) {
-          otherPlayer.anims.play(
-            `${serverStateData[id].avatar}-right-walk`,
-            true
-          );
+          otherPlayer.anims.play(`${otherPlayerData.avatar}-right-walk`, true);
         }
         isMoving = true;
-      } else if (otherPlayer.x > serverStateData[id].x + err) {
+      } else if (otherPlayer.x > otherPlayerData.x + err) {
         otherPlayer.setVelocityX(-SPEED);
         if (!isMoving) {
-          otherPlayer.anims.play(
-            `${serverStateData[id].avatar}-left-walk`,
-            true
-          );
+          otherPlayer.anims.play(`${otherPlayerData.avatar}-left-walk`, true);
         }
         isMoving = true;
       }
-      if (otherPlayer.y > serverStateData[id].y + err) {
+      if (otherPlayer.y > otherPlayerData.y + err) {
         otherPlayer.setVelocityY(-SPEED);
         if (!isMoving) {
-          otherPlayer.anims.play(
-            `${serverStateData[id].avatar}-back-walk`,
-            true
-          );
+          otherPlayer.anims.play(`${otherPlayerData.avatar}-back-walk`, true);
         }
         isMoving = true;
-      } else if (otherPlayer.y < serverStateData[id].y - err) {
+      } else if (otherPlayer.y < otherPlayerData.y - err) {
         otherPlayer.setVelocityY(SPEED);
         if (!isMoving) {
-          otherPlayer.anims.play(
-            `${serverStateData[id].avatar}-front-walk`,
-            true
-          );
+          otherPlayer.anims.play(`${otherPlayerData.avatar}-front-walk`, true);
         }
         isMoving = true;
       }
       if (!isMoving) {
         otherPlayer.anims.stop();
-        if (serverStateData[id].facing) {
+        if (otherPlayerData.facing) {
           otherPlayer.setTexture(
-            serverStateData[id].avatar,
-            DIR_FRAMES[serverStateData[id].facing]
+            otherPlayerData.avatar,
+            DIR_FRAMES[otherPlayerData.facing]
           );
         }
       }
