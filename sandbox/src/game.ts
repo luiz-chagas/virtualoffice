@@ -40,6 +40,10 @@ export default class GameScene extends Phaser.Scene {
       "assets/world/d3f7sm6-00fc3673-65fd-4ca5-9fc5-f61783440edf.png"
     );
     this.load.image(
+      "furniture2",
+      "assets/world/darwtlj-dda4428b-1a3f-422e-81c5-f7844b267d68.png"
+    );
+    this.load.image(
       "ground",
       "assets/world/d4becnf-37d112e7-aaf7-4c8d-9568-b474d452c114.png"
     );
@@ -66,10 +70,16 @@ export default class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({ key: "map" });
     const groundTileset = map.addTilesetImage("Ground", "ground");
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
+    const furniture2Tileset = map.addTilesetImage("Furniture2", "furniture2");
     const floorLayer = map.createStaticLayer("Floor", groundTileset);
     const wallsLayer = map.createStaticLayer("Walls", groundTileset);
     wallsLayer.setCollisionByProperty({ collides: true });
-    const furnitureLayer = map.createStaticLayer("Furniture", furnitureTileset);
+    const objectsLayer = map.createStaticLayer("Objects", furniture2Tileset);
+    objectsLayer.setDepth(10);
+    const furnitureLayer = map.createStaticLayer("Furniture", [
+      furnitureTileset,
+      furniture2Tileset,
+    ]);
     furnitureLayer.setCollisionByProperty({ collides: true });
 
     const animationManager = this.anims;
