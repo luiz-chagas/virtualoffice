@@ -266,10 +266,10 @@ export default class GameScene extends Phaser.Scene {
       const dist = getDistanceBetweenPlayers(player, otherPlayer);
       if (dist < 150) {
         changeVolume(id, 1);
-      } else if (dist > 300) {
+      } else if (dist > 400) {
         changeVolume(id, 0);
       } else {
-        changeVolume(id, -dist / 150 + 2);
+        changeVolume(id, -dist / 250 + 1.6);
       }
     });
 
