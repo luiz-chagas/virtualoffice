@@ -206,7 +206,10 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    player.getData("name").setPosition(player.x + 15, player.y - 10);
+    player
+      .getData("name")
+      .setText(myData.name)
+      .setPosition(player.x + 15, player.y - 10);
 
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
       const otherPlayerData = serverStateData[id];
@@ -220,6 +223,7 @@ export default class GameScene extends Phaser.Scene {
       }
       otherPlayer
         .getData("name")
+        .setText(otherPlayerData.name)
         .setPosition(otherPlayerData.x + 15, otherPlayerData.y - 10);
       otherPlayer.setVelocity(0);
       if (otherPlayer.x < otherPlayerData.x - err) {
