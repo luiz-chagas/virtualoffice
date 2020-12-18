@@ -4,6 +4,7 @@ const mediaConstraints = {
 };
 
 const connections: Record<string, RTCPeerConnection> = {};
+const streams: Record<string, HTMLAudioElement> = {};
 let myStream: Promise<MediaStream>;
 
 export const setupHandlers = (socket: SocketIOClient.Socket) => {
@@ -109,7 +110,13 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
   socket.on("new-ice-candidate", handleIceCandidate);
   socket.on("hang-up", handleHangUp);
 
-  return { makeOffer };
+  const changeVolume = (player: string, volume: number) => {
+    if (streams[player]) {
+      streams[player].volume = volume;
+    }
+  };
+
+  return { connectToAudio: makeOffer, changeVolume };
 };
 
 const createPeerConnection = async (target: string) => {
@@ -149,6 +156,7 @@ const addStreamToDOM = (userId: string, stream: MediaStream) => {
   mediaElement.id = userId;
   mediaElement.srcObject = stream;
   mediaElement.autoplay = true;
+  streams[userId] = mediaElement;
 };
 
 const removeStreamFromDOM = (userId: string) => {

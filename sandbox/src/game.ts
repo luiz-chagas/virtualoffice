@@ -18,7 +18,7 @@ let lastPos = { x: 0, y: 0, facing: "south" };
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
-const { makeOffer } = setupHandlers(socket);
+const { connectToAudio, changeVolume } = setupHandlers(socket);
 let isInitialData = true;
 
 const DIR_FRAMES = {
@@ -74,14 +74,12 @@ export default class GameScene extends Phaser.Scene {
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
     const furniture2Tileset = map.addTilesetImage("Furniture2", "furniture2");
     const furniture3Tileset = map.addTilesetImage("Furniture3", "furniture3");
-    const floorLayer = map.createStaticLayer("Floor", groundTileset);
+    map.createStaticLayer("Floor", groundTileset);
     const wallsLayer = map.createStaticLayer("Walls", groundTileset);
     wallsLayer.setCollisionByProperty({ collides: true });
-    const objectsLayer = map.createStaticLayer("Objects", [
-      furniture2Tileset,
-      furniture3Tileset,
-    ]);
-    objectsLayer.setDepth(10);
+    map
+      .createStaticLayer("Objects", [furniture2Tileset, furniture3Tileset])
+      .setDepth(10);
     const furnitureLayer = map.createStaticLayer("Furniture", [
       furnitureTileset,
       furniture2Tileset,
@@ -131,7 +129,7 @@ export default class GameScene extends Phaser.Scene {
               this.physics.add.collider(gameState[id], furnitureLayer);
             }
             if (id !== socket.id) {
-              makeOffer(id);
+              connectToAudio(id);
             }
           }
         }
@@ -221,10 +219,7 @@ export default class GameScene extends Phaser.Scene {
       if (!otherPlayerData) {
         return;
       }
-      otherPlayer
-        .getData("name")
-        .setText(otherPlayerData.name)
-        .setPosition(otherPlayerData.x + 15, otherPlayerData.y - 10);
+      // Other Players Movement
       otherPlayer.setVelocity(0);
       if (otherPlayer.x < otherPlayerData.x - err) {
         otherPlayer.setVelocityX(SPEED);
@@ -262,6 +257,20 @@ export default class GameScene extends Phaser.Scene {
         }
       }
       body.velocity.normalize().scale(SPEED);
+      // Other Players Name
+      otherPlayer
+        .getData("name")
+        .setText(otherPlayerData.name)
+        .setPosition(otherPlayer.x + 15, otherPlayer.y - 10);
+      // Other Players Audio Volume
+      const dist = getDistanceBetweenPlayers(player, otherPlayer);
+      if (dist < 150) {
+        changeVolume(id, 1);
+      } else if (dist > 300) {
+        changeVolume(id, 0);
+      } else {
+        changeVolume(id, -dist / 150 + 2);
+      }
     });
 
     if (time > lastUpdate + 33) {
@@ -286,6 +295,7 @@ export default class GameScene extends Phaser.Scene {
         }
       });
       toDelete.forEach((id) => {
+        gameState[id].getData("name").destroy();
         gameState[id].destroy();
         delete gameState[id];
       });
@@ -358,3 +368,12 @@ const registerAnimations = (
     repeat: -1,
   });
 };
+
+interface WithXAndY {
+  x: number;
+  y: number;
+}
+const getDistanceBetweenPlayers = (player1: WithXAndY, player2: WithXAndY) =>
+  Math.sqrt(
+    Math.pow(player1.x - player2.x, 2) + Math.pow(player1.y - player2.y, 2)
+  );
