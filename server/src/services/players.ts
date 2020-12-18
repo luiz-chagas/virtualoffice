@@ -19,8 +19,8 @@ export const makePlayersService = (socketServer: Server) => {
   const addPlayer = (socketId: string) => {
     players[socketId] = {
       id: socketId,
-      x: 0,
-      y: 0,
+      x: 380,
+      y: 580,
       facing: "south",
       avatar: getRandomAvatar(),
     };

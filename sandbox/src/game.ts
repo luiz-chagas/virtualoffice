@@ -66,8 +66,9 @@ export default class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({ key: "map" });
     const groundTileset = map.addTilesetImage("Ground", "ground");
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
-    const groundLayer = map.createStaticLayer("Ground", groundTileset);
-    groundLayer.setCollisionByProperty({ collides: true });
+    const floorLayer = map.createStaticLayer("Floor", groundTileset);
+    const wallsLayer = map.createStaticLayer("Walls", groundTileset);
+    wallsLayer.setCollisionByProperty({ collides: true });
     const furnitureLayer = map.createStaticLayer("Furniture", furnitureTileset);
     furnitureLayer.setCollisionByProperty({ collides: true });
 
@@ -78,7 +79,7 @@ export default class GameScene extends Phaser.Scene {
     registerAnimations("player4", animationManager);
 
     this.cameras.main
-      .setZoom(1.75)
+      .setZoom(2)
       .setBounds(
         0,
         0,
@@ -92,17 +93,19 @@ export default class GameScene extends Phaser.Scene {
       serverStateData = dataState;
       Object.entries(dataState).forEach(([id, playerData]) => {
         if (!gameState[id]) {
-          if (socket.id !== id && isInitialData) {
-            makeOffer(id);
-          }
           gameState[id] = this.physics.add
             .sprite(playerData.x, playerData.y, playerData.avatar, 0)
             .setCollideWorldBounds(true)
             .setDisplaySize(30, 30)
             .setOrigin(0);
-          if (id === socket.id) {
-            this.physics.add.collider(gameState[id], groundLayer);
-            this.physics.add.collider(gameState[id], furnitureLayer);
+          if (isInitialData) {
+            if (id === socket.id) {
+              this.physics.add.collider(gameState[id], wallsLayer);
+              this.physics.add.collider(gameState[id], furnitureLayer);
+            }
+            if (id !== socket.id) {
+              makeOffer(id);
+            }
           }
         }
       });
