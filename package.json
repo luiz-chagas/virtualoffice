@@ -5,8 +5,8 @@
   "main": "",
   "scripts": {
     "start": "cd server/build && node server.js",
-    "build": "(cd sandbox && npm run build); (cd server && npm run build);",
-    "postinstall": "(cd sandbox && npm install); (cd server && npm install);"
+    "build": "(cd sandbox && npm run build); (cd server && npm run build); (cd office && npm run build);",
+    "postinstall": "(cd sandbox && npm install); (cd server && npm install); (cd office && npm install);"
   },
   "repository": {
     "type": "git",

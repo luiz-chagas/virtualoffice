@@ -56,7 +56,7 @@ export const makePlayersService = (socketServer: Server) => {
     });
 
     socket.on("name", (name: string) => {
-      updatePlayer(socket.id, { name: name.trim().substring(0, 12) });
+      updatePlayer(socket.id, { name: name?.trim().substring(0, 12) });
     });
   });
 
