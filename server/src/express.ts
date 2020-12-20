@@ -13,8 +13,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(
-  "/sandbox",
-  express.static(path.join(__dirname, "..", "..", "sandbox", "dist"))
+  "/phaser",
+  express.static(path.join(__dirname, "..", "..", "phaser", "dist"))
 );
 app.use("/api", router);
 app.use(express.static(path.join(__dirname, "..", "..", "office", "build")));

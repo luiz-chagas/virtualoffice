@@ -3,9 +3,9 @@ import { Wallpaper, Window, TextBox, Button } from "react-windows-xp";
 
 function App() {
   const [name, setName] = useState("");
-  const [showSandbox, setShowSandbox] = useState(false);
+  const [showPhaser, setShowPhaser] = useState(false);
 
-  if (showSandbox) {
+  if (showPhaser) {
     return (
       <div
         style={{
@@ -22,8 +22,8 @@ function App() {
           style={{
             border: "none",
           }}
-          title="Crema Sandbox"
-          src={`/sandbox?name=${name}`}
+          title="Crema Virtual Office"
+          src={`/phaser?name=${name}`}
         />
       </div>
     );
@@ -73,7 +73,7 @@ function App() {
                 }}
               >
                 <Button
-                  onClick={() => setShowSandbox(true)}
+                  onClick={() => setShowPhaser(true)}
                   disabled={name.length === 0}
                 >
                   Join Loft
