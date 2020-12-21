@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { HUDScene } from "./HUD";
 import { connectToServer, spawn } from "./socket";
 import { setupHandlers } from "./voice";
 interface PlayerData {
@@ -30,7 +31,7 @@ const DIR_FRAMES = {
 };
 const SPEED = 125;
 
-export default class GameScene extends Phaser.Scene {
+class GameScene extends Phaser.Scene {
   constructor() {
     super("gameScene");
     Phaser.Scene.call(this, { key: "gameScene", active: true });
@@ -80,7 +81,7 @@ export default class GameScene extends Phaser.Scene {
     wallsLayer.setCollisionByProperty({ collides: true });
     map
       .createLayer("Objects", [furniture2Tileset, furniture3Tileset])
-      .setDepth(10);
+      .setDepth(1);
     const furnitureLayer = map.createLayer("Furniture", [
       furnitureTileset,
       furniture2Tileset,
@@ -119,6 +120,7 @@ export default class GameScene extends Phaser.Scene {
 
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
+      this.events.emit("updatePlayerCount", Object.keys(dataState).length);
       Object.entries(dataState).forEach(([id, playerData]) => {
         if (!gameState[id]) {
           gameState[id] = this.physics.add
@@ -131,11 +133,13 @@ export default class GameScene extends Phaser.Scene {
               "name",
               this.add
                 .text(playerData.x + 15, playerData.y - 10, playerData.name, {
-                  font: "16px Courier",
+                  fontFamily: "Arial",
                   color: "#48fb00",
+                  fontSize: "10px",
+                  resolution: 2,
                 })
                 .setOrigin(0.5)
-                .setDepth(20)
+                .setDepth(2)
             );
           if (isInitialData) {
             if (id === socket.id) {
@@ -317,30 +321,6 @@ export default class GameScene extends Phaser.Scene {
   }
 }
 
-new Phaser.Game({
-  type: Phaser.AUTO,
-  scale: {
-    mode: Phaser.Scale.ScaleModes.FIT,
-    parent: "gameScene",
-    autoCenter: Phaser.Scale.Center.CENTER_BOTH,
-    width: "100%",
-    height: "100%",
-  },
-  backgroundColor: "#000",
-  scene: GameScene,
-  banner: {
-    hidePhaser: true,
-  },
-  physics: {
-    default: "arcade",
-    arcade: {
-      debug: process.env.NODE_ENV === "development",
-      height: 640,
-      width: 960,
-    },
-  },
-});
-
 const registerAnimations = (
   name: string,
   manager: Phaser.Animations.AnimationManager
@@ -391,3 +371,27 @@ const getDistanceBetweenPlayers = (player1: WithXAndY, player2: WithXAndY) =>
   Math.sqrt(
     Math.pow(player1.x - player2.x, 2) + Math.pow(player1.y - player2.y, 2)
   );
+
+new Phaser.Game({
+  type: Phaser.AUTO,
+  scale: {
+    mode: Phaser.Scale.ScaleModes.FIT,
+    parent: "gameScene",
+    autoCenter: Phaser.Scale.Center.CENTER_BOTH,
+    width: "100%",
+    height: "100%",
+  },
+  backgroundColor: "#000",
+  scene: [GameScene, HUDScene],
+  banner: {
+    hidePhaser: true,
+  },
+  physics: {
+    default: "arcade",
+    arcade: {
+      debug: process.env.NODE_ENV === "development",
+      height: 640,
+      width: 960,
+    },
+  },
+});
