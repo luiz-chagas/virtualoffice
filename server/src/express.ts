@@ -1,13 +1,11 @@
 import createError, { HttpError } from "http-errors";
 import express, { NextFunction, Response, Request } from "express";
 import cookieParser from "cookie-parser";
-import logger from "morgan";
 import path from "path";
 import { router } from "./routes";
 
 export const app = express();
 
-app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
