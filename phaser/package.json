@@ -4,9 +4,8 @@
   "description": "",
   "main": "src/game.ts",
   "scripts": {
-    "dev": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config rollup.config.dev.js",
-    "build": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config rollup.config.dist.js",
-    "watch": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --watch --config rollup.config.dev.js"
+    "start": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --watch --config rollup.config.dev.js",
+    "build": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config rollup.config.dist.js"
   },
   "repository": {
     "type": "git",
