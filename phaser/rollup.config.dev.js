@@ -1,5 +1,5 @@
-import commonjs from "rollup-plugin-commonjs";
-import resolve from "rollup-plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import serve from "rollup-plugin-serve";
 import typescript from "rollup-plugin-typescript2";
@@ -12,7 +12,6 @@ export default {
   //  Where the build file is to be generated.
   //  Most games being built for distribution can use iife as the module type.
   //  You can also use 'umd' if you need to ingest your game into another system.
-  //  The 'intro' property can be removed if using Phaser 3.21 or above. Keep it for earlier versions.
   output: {
     file: "dist/game.js",
     name: "OurSpace",
@@ -32,13 +31,13 @@ export default {
       "typeof FEATURE_SOUND": JSON.stringify(true),
     }),
 
+    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
+    typescript(),
+
     //  Parse our .ts source files
     resolve({
       extensions: [".ts"],
     }),
-
-    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
-    typescript(),
 
     //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
     commonjs({

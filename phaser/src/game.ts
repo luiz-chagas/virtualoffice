@@ -75,13 +75,13 @@ export default class GameScene extends Phaser.Scene {
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
     const furniture2Tileset = map.addTilesetImage("Furniture2", "furniture2");
     const furniture3Tileset = map.addTilesetImage("Furniture3", "furniture3");
-    map.createStaticLayer("Floor", groundTileset);
-    const wallsLayer = map.createStaticLayer("Walls", groundTileset);
+    map.createLayer("Floor", groundTileset);
+    const wallsLayer = map.createLayer("Walls", groundTileset);
     wallsLayer.setCollisionByProperty({ collides: true });
     map
-      .createStaticLayer("Objects", [furniture2Tileset, furniture3Tileset])
+      .createLayer("Objects", [furniture2Tileset, furniture3Tileset])
       .setDepth(10);
-    const furnitureLayer = map.createStaticLayer("Furniture", [
+    const furnitureLayer = map.createLayer("Furniture", [
       furnitureTileset,
       furniture2Tileset,
       furniture3Tileset,
@@ -132,7 +132,7 @@ export default class GameScene extends Phaser.Scene {
               this.add
                 .text(playerData.x + 15, playerData.y - 10, playerData.name, {
                   font: "16px Courier",
-                  fill: "#48fb00",
+                  color: "#48fb00",
                 })
                 .setOrigin(0.5)
                 .setDepth(20)
