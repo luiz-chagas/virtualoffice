@@ -57,9 +57,44 @@
          "width":60,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":6,
+         "name":"Loft Spawns",
+         "objects":[
+                {
+                 "height":0,
+                 "id":1,
+                 "name":"Main Entrance",
+                 "point":true,
+                 "rotation":0,
+                 "type":"SpawnPoint",
+                 "visible":true,
+                 "width":0,
+                 "x":379.119832349019,
+                 "y":599.479265891916
+                }, 
+                {
+                 "height":0,
+                 "id":3,
+                 "name":"Back Door",
+                 "point":true,
+                 "rotation":0,
+                 "type":"SpawnPoint",
+                 "visible":true,
+                 "width":0,
+                 "x":22.8614974280815,
+                 "y":93.3511144979997
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":6,
- "nextobjectid":1,
+ "nextlayerid":7,
+ "nextobjectid":4,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",
@@ -2674,7 +2709,7 @@
         {
          "columns":32,
          "firstgid":289,
-         "image":"..\/..\/..\/..\/..\/..\/..\/Desktop\/d3f7sm6-00fc3673-65fd-4ca5-9fc5-f61783440edf.png",
+         "image":"d3f7sm6-00fc3673-65fd-4ca5-9fc5-f61783440edf.png",
          "imageheight":512,
          "imagewidth":512,
          "margin":0,

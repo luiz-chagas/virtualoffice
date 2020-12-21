@@ -7,15 +7,15 @@ export const connectToServer = () => {
       : io({
           transports: ["websocket"],
         });
-  updatePlayerName(socket);
   return { socket };
 };
 
-const updatePlayerName = (socket: SocketIOClient.Socket) => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const name = urlParams.get("name");
-  if (name) {
-    return socket.emit("name", name);
-  }
-  setTimeout(() => updatePlayerName(socket), 100);
+export const spawn = (socket: SocketIOClient.Socket, x: number, y: number) => {
+  const name =
+    new URLSearchParams(window.location.search).get("name") || "Anonymous";
+  socket.emit("join", {
+    name,
+    x,
+    y,
+  });
 };

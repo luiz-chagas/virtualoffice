@@ -7,6 +7,7 @@ interface Player {
   facing: "north" | "south" | "east" | "west";
   avatar: string;
   name: string;
+  visible: boolean;
 }
 
 const getRandomAvatar = () => {
@@ -16,17 +17,6 @@ const getRandomAvatar = () => {
 
 export const makePlayersService = (socketServer: Server) => {
   const players: Record<string, Player> = {};
-
-  const addPlayer = (socketId: string) => {
-    players[socketId] = {
-      id: socketId,
-      x: 380,
-      y: 580,
-      facing: "south",
-      avatar: getRandomAvatar(),
-      name: "",
-    };
-  };
 
   const removePlayer = (socketId: string) => {
     delete players[socketId];
@@ -41,7 +31,15 @@ export const makePlayersService = (socketServer: Server) => {
   };
 
   socketServer.on("connection", (socket) => {
-    addPlayer(socket.id);
+    players[socket.id] = {
+      id: socket.id,
+      x: 0,
+      y: 0,
+      facing: "south",
+      avatar: getRandomAvatar(),
+      name: "",
+      visible: false,
+    };
 
     socket.on("disconnect", () => {
       removePlayer(socket.id);
@@ -55,11 +53,14 @@ export const makePlayersService = (socketServer: Server) => {
       updatePlayer(socket.id, playerData);
     });
 
-    socket.on("name", (name: string) => {
-      if (name) {
-        console.log(`Player updated their name to ${name}`);
-        updatePlayer(socket.id, { name: name.trim().substring(0, 12) });
-      }
+    socket.on("join", ({ name, x, y }: Player) => {
+      updatePlayer(socket.id, {
+        name: name.trim().substring(0, 12),
+        x,
+        y,
+        visible: true,
+      });
+      socket.emit("joined", players[socket.id]);
     });
   });
 

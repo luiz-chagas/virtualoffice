@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { connectToServer } from "./socket";
+import { connectToServer, spawn } from "./socket";
 import { setupHandlers } from "./voice";
 interface PlayerData {
   id: string;
@@ -8,6 +8,7 @@ interface PlayerData {
   avatar: string;
   name: string;
   facing: "north" | "south" | "east" | "west";
+  visible: boolean;
 }
 
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -87,6 +88,14 @@ export default class GameScene extends Phaser.Scene {
     ]);
     furnitureLayer.setCollisionByProperty({ collides: true });
 
+    const spawnPoints = map.filterObjects(
+      "Loft Spawns",
+      (obj) => obj.type === "SpawnPoint"
+    );
+    const playerSpawnPoint =
+      spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
+    spawn(socket, (playerSpawnPoint as any).x, (playerSpawnPoint as any).y);
+
     const animationManager = this.anims;
     registerAnimations("player1", animationManager);
     registerAnimations("player2", animationManager);
@@ -104,6 +113,10 @@ export default class GameScene extends Phaser.Scene {
 
     cursors = this.input.keyboard.createCursorKeys();
 
+    socket.on("joined", (data: PlayerData) => {
+      gameState[socket.id].setVisible(data.visible).setX(data.x).setY(data.y);
+    });
+
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
       Object.entries(dataState).forEach(([id, playerData]) => {
@@ -113,6 +126,7 @@ export default class GameScene extends Phaser.Scene {
             .setCollideWorldBounds(true)
             .setDisplaySize(30, 30)
             .setOrigin(0)
+            .setVisible(playerData.visible)
             .setData(
               "name",
               this.add
