@@ -32,15 +32,12 @@ export default {
       "typeof FEATURE_SOUND": JSON.stringify(true),
     }),
 
+    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
+    typescript(),
+
     //  Parse our .ts source files
     resolve({
       extensions: [".ts"],
-    }),
-
-    //  See https://www.npmjs.com/package/rollup-plugin-typescript2 for config options
-    typescript({
-      typescript: require("typescript"),
-      objectHashIgnoreUnknownHack: true,
     }),
 
     //  We need to convert the Phaser 3 CJS modules into a format Rollup can use:
