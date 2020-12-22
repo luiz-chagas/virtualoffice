@@ -7,7 +7,6 @@ interface Player {
   facing: "north" | "south" | "east" | "west";
   avatar: string;
   name: string;
-  visible: boolean;
 }
 
 const getRandomAvatar = () => {
@@ -31,16 +30,6 @@ export const makePlayersService = (socketServer: Server) => {
   };
 
   socketServer.on("connection", (socket) => {
-    players[socket.id] = {
-      id: socket.id,
-      x: 0,
-      y: 0,
-      facing: "south",
-      avatar: getRandomAvatar(),
-      name: "",
-      visible: false,
-    };
-
     socket.on("disconnect", () => {
       removePlayer(socket.id);
     });
@@ -55,12 +44,13 @@ export const makePlayersService = (socketServer: Server) => {
 
     socket.on("join", ({ name, x, y }: Player) => {
       updatePlayer(socket.id, {
-        name: name.trim().substring(0, 12),
+        id: socket.id,
         x,
         y,
-        visible: true,
+        name: name.trim().substring(0, 12),
+        avatar: getRandomAvatar(),
+        facing: "south",
       });
-      socket.emit("joined", players[socket.id]);
     });
   });
 

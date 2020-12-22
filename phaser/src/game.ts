@@ -1,16 +1,11 @@
 import Phaser from "phaser";
 import { HUDScene } from "./HUD";
 import { connectToServer, spawn } from "./socket";
+import { PlayerData } from "./types/PlayerData";
 import { setupHandlers } from "./voice";
-interface PlayerData {
-  id: string;
-  x: number;
-  y: number;
-  avatar: string;
-  name: string;
-  facing: "north" | "south" | "east" | "west";
-  visible: boolean;
-}
+import { LocalPlayer } from "./localPlayer";
+import { RemotePlayer } from "./remotePlayer";
+import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
 
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let lastUpdate = -Infinity;
@@ -21,15 +16,6 @@ const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
 const { connectToAudio, changeVolume } = setupHandlers(socket);
-let isInitialData = true;
-
-const DIR_FRAMES = {
-  west: 4,
-  east: 8,
-  north: 12,
-  south: 0,
-};
-const SPEED = 125;
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -114,50 +100,28 @@ class GameScene extends Phaser.Scene {
 
     cursors = this.input.keyboard.createCursorKeys();
 
-    socket.on("joined", (data: PlayerData) => {
-      gameState[socket.id].setVisible(data.visible).setX(data.x).setY(data.y);
-    });
-
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
       this.events.emit("updatePlayerCount", Object.keys(dataState).length);
       Object.entries(dataState).forEach(([id, playerData]) => {
         if (!gameState[id]) {
-          gameState[id] = this.physics.add
-            .sprite(playerData.x, playerData.y, playerData.avatar, 0)
-            .setCollideWorldBounds(true)
-            .setDisplaySize(30, 30)
-            .setOrigin(0)
-            .setVisible(playerData.visible)
-            .setData(
-              "name",
-              this.add
-                .text(playerData.x + 15, playerData.y - 10, playerData.name, {
-                  fontFamily: "Arial",
-                  color: "#48fb00",
-                  fontSize: "10px",
-                  resolution: 2,
-                })
-                .setOrigin(0.5)
-                .setDepth(2)
-            );
-          if (isInitialData) {
-            if (id === socket.id) {
-              this.physics.add.collider(gameState[id], wallsLayer);
-              this.physics.add.collider(gameState[id], furnitureLayer);
-            }
-            if (id !== socket.id) {
-              connectToAudio(id);
-            }
+          if (id === socket.id) {
+            gameState[id] = new LocalPlayer(this, map, playerData);
+          } else {
+            gameState[id] = new RemotePlayer(this, playerData);
+            connectToAudio(id);
+          }
+        } else {
+          if (id !== socket.id) {
+            (gameState[id] as RemotePlayer).setNewData(playerData);
           }
         }
       });
-      isInitialData = false;
     });
   }
 
   update(time, delta) {
-    let player = gameState[socket.id];
+    const player = gameState[socket.id];
     const myData = serverStateData[socket.id];
 
     if (!player) {
@@ -167,7 +131,6 @@ class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(player);
 
     const prevVelocity = player.body.velocity.clone();
-
     const body = player.body as Phaser.Physics.Arcade.Body;
 
     // Stop any previous movement from the last frame
@@ -175,20 +138,20 @@ class GameScene extends Phaser.Scene {
 
     // Horizontal movement
     if (cursors.left.isDown) {
-      body.setVelocityX(-SPEED);
+      body.setVelocityX(-PLAYER_SPEED);
     } else if (cursors.right.isDown) {
-      body.setVelocityX(SPEED);
+      body.setVelocityX(PLAYER_SPEED);
     }
 
     // Vertical movement
     if (cursors.up.isDown) {
-      body.setVelocityY(-SPEED);
+      body.setVelocityY(-PLAYER_SPEED);
     } else if (cursors.down.isDown) {
-      body.setVelocityY(SPEED);
+      body.setVelocityY(PLAYER_SPEED);
     }
 
     // Normalize and scale the velocity so that player can't move faster along a diagonal
-    body.velocity.normalize().scale(SPEED);
+    body.velocity.normalize().scale(PLAYER_SPEED);
 
     // Update the animation last and give left/right animations precedence over up/down animations
     let facing = "";
@@ -228,58 +191,6 @@ class GameScene extends Phaser.Scene {
       .setPosition(player.x + 15, player.y - 10);
 
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
-      const otherPlayerData = serverStateData[id];
-      const err = 3;
-      let isMoving = false;
-      if (id === socket.id) {
-        return;
-      }
-      if (!otherPlayerData) {
-        return;
-      }
-      // Other Players Movement
-      otherPlayer.setVelocity(0);
-      if (otherPlayer.x < otherPlayerData.x - err) {
-        otherPlayer.setVelocityX(SPEED);
-        if (!isMoving) {
-          otherPlayer.anims.play(`${otherPlayerData.avatar}-right-walk`, true);
-        }
-        isMoving = true;
-      } else if (otherPlayer.x > otherPlayerData.x + err) {
-        otherPlayer.setVelocityX(-SPEED);
-        if (!isMoving) {
-          otherPlayer.anims.play(`${otherPlayerData.avatar}-left-walk`, true);
-        }
-        isMoving = true;
-      }
-      if (otherPlayer.y > otherPlayerData.y + err) {
-        otherPlayer.setVelocityY(-SPEED);
-        if (!isMoving) {
-          otherPlayer.anims.play(`${otherPlayerData.avatar}-back-walk`, true);
-        }
-        isMoving = true;
-      } else if (otherPlayer.y < otherPlayerData.y - err) {
-        otherPlayer.setVelocityY(SPEED);
-        if (!isMoving) {
-          otherPlayer.anims.play(`${otherPlayerData.avatar}-front-walk`, true);
-        }
-        isMoving = true;
-      }
-      if (!isMoving) {
-        otherPlayer.anims.stop();
-        if (otherPlayerData.facing) {
-          otherPlayer.setTexture(
-            otherPlayerData.avatar,
-            DIR_FRAMES[otherPlayerData.facing]
-          );
-        }
-      }
-      body.velocity.normalize().scale(SPEED);
-      // Other Players Name
-      otherPlayer
-        .getData("name")
-        .setText(otherPlayerData.name)
-        .setPosition(otherPlayer.x + 15, otherPlayer.y - 10);
       // Other Players Audio Volume
       const dist = getDistanceBetweenPlayers(player, otherPlayer);
       if (dist < 150) {
