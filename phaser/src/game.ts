@@ -3,8 +3,7 @@ import { HUDScene } from "./HUD";
 import { connectToServer, spawn } from "./socket";
 import { PlayerData } from "./types/PlayerData";
 import { setupHandlers } from "./voice";
-import { LocalPlayer } from "./localPlayer";
-import { RemotePlayer } from "./remotePlayer";
+import { LocalPlayer, RemotePlayer } from "./models/player";
 import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
 
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
