@@ -119,7 +119,7 @@ class GameScene extends Phaser.Scene {
     });
   }
 
-  update(time, delta) {
+  update(time: number) {
     const player = gameState[socket.id];
     const myData = serverStateData[socket.id];
 
@@ -168,20 +168,8 @@ class GameScene extends Phaser.Scene {
       player.anims.play(`${myData.avatar}-front-walk`, true);
     } else {
       player.anims.stop();
-      // If we were moving, pick and idle frame to use
-      if (prevVelocity.x < 0) {
-        facing = "west";
-        player.setTexture(myData.avatar, DIR_FRAMES.west);
-      } else if (prevVelocity.x > 0) {
-        facing = "east";
-        player.setTexture(myData.avatar, DIR_FRAMES.east);
-      } else if (prevVelocity.y < 0) {
-        facing = "north";
-        player.setTexture(myData.avatar, DIR_FRAMES.north);
-      } else if (prevVelocity.y > 0) {
-        facing = "south";
-        player.setTexture(myData.avatar, DIR_FRAMES.south);
-      }
+      player.setTexture(myData.avatar, DIR_FRAMES[myData.facing]);
+      facing = myData.facing;
     }
 
     player

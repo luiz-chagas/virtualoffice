@@ -69,9 +69,7 @@ export class RemotePlayer extends BasePlayer {
     }
     if (!isMoving) {
       this.anims.stop();
-      if (data.facing) {
-        this.setTexture(data.avatar, DIR_FRAMES[data.facing]);
-      }
+      this.setTexture(data.avatar, DIR_FRAMES[data.facing]);
     }
 
     this.body.velocity.normalize().scale(PLAYER_SPEED);
