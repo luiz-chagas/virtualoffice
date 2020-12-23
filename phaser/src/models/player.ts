@@ -90,5 +90,6 @@ export class LocalPlayer extends BasePlayer {
 
     scene.physics.add.collider(this, map.getLayer("Furniture").tilemapLayer);
     scene.physics.add.collider(this, map.getLayer("Walls").tilemapLayer);
+    scene.physics.add.collider(this, map.getLayer("Objects").tilemapLayer);
   }
 }

@@ -63,18 +63,23 @@ class GameScene extends Phaser.Scene {
     const furniture2Tileset = map.addTilesetImage("Furniture2", "furniture2");
     const furniture3Tileset = map.addTilesetImage("Furniture3", "furniture3");
     const medievalTileset = map.addTilesetImage("Medieval", "medieval");
-    map.createLayer("Floor", groundTileset);
-    const wallsLayer = map.createLayer("Walls", medievalTileset);
-    wallsLayer.setCollisionByProperty({ collides: true });
+    map
+      .createLayer("Floor", groundTileset)
+      .setCollisionByProperty({ collides: true });
+    map
+      .createLayer("Walls", medievalTileset)
+      .setCollisionByProperty({ collides: true });
     map
       .createLayer("Objects", [furniture2Tileset, furniture3Tileset])
+      .setCollisionByProperty({ collides: true })
       .setDepth(1);
-    const furnitureLayer = map.createLayer("Furniture", [
-      furnitureTileset,
-      furniture2Tileset,
-      furniture3Tileset,
-    ]);
-    furnitureLayer.setCollisionByProperty({ collides: true });
+    map
+      .createLayer("Furniture", [
+        furnitureTileset,
+        furniture2Tileset,
+        furniture3Tileset,
+      ])
+      .setCollisionByProperty({ collides: true });
 
     const spawnPoints = map.filterObjects(
       "Loft Spawns",
