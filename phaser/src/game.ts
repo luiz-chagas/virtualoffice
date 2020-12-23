@@ -36,6 +36,7 @@ class GameScene extends Phaser.Scene {
       "ground",
       "assets/world/d4becnf-37d112e7-aaf7-4c8d-9568-b474d452c114.png"
     );
+    this.load.image("medieval", "assets/world/medieval.png");
     this.load.tilemapTiledJSON("map", "assets/world/LoftMap.json");
     this.load.spritesheet("player1", "assets/player/char1.png", {
       frameWidth: 68,
@@ -61,8 +62,9 @@ class GameScene extends Phaser.Scene {
     const furnitureTileset = map.addTilesetImage("Furniture", "furniture");
     const furniture2Tileset = map.addTilesetImage("Furniture2", "furniture2");
     const furniture3Tileset = map.addTilesetImage("Furniture3", "furniture3");
+    const medievalTileset = map.addTilesetImage("Medieval", "medieval");
     map.createLayer("Floor", groundTileset);
-    const wallsLayer = map.createLayer("Walls", groundTileset);
+    const wallsLayer = map.createLayer("Walls", medievalTileset);
     wallsLayer.setCollisionByProperty({ collides: true });
     map
       .createLayer("Objects", [furniture2Tileset, furniture3Tileset])
@@ -288,8 +290,8 @@ new Phaser.Game({
     default: "arcade",
     arcade: {
       debug: process.env.NODE_ENV === "development",
-      height: 640,
-      width: 960,
+      height: 704,
+      width: 992,
     },
   },
 });
