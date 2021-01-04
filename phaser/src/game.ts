@@ -10,6 +10,7 @@ let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
+let facing = "south";
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
@@ -136,7 +137,6 @@ class GameScene extends Phaser.Scene {
 
     this.cameras.main.startFollow(player);
 
-    const prevVelocity = player.body.velocity.clone();
     const body = player.body as Phaser.Physics.Arcade.Body;
 
     // Stop any previous movement from the last frame
@@ -160,7 +160,6 @@ class GameScene extends Phaser.Scene {
     body.velocity.normalize().scale(PLAYER_SPEED);
 
     // Update the animation last and give left/right animations precedence over up/down animations
-    let facing = "";
     if (cursors.left.isDown) {
       facing = "west";
       player.anims.play(`${myData.avatar}-left-walk`, true);
@@ -176,7 +175,6 @@ class GameScene extends Phaser.Scene {
     } else {
       player.anims.stop();
       player.setTexture(myData.avatar, DIR_FRAMES[myData.facing]);
-      facing = myData.facing;
     }
 
     player
