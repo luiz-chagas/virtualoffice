@@ -87,7 +87,8 @@ export class LocalPlayer extends BasePlayer {
     playerData: PlayerData
   ) {
     super(scene, playerData);
-
+    this.setBodySize(32, 32, false);
+    this.setOffset(16, 32);
     scene.physics.add.collider(this, map.getLayer("Furniture").tilemapLayer);
     scene.physics.add.collider(this, map.getLayer("Walls").tilemapLayer);
     scene.physics.add.collider(this, map.getLayer("Objects").tilemapLayer);
