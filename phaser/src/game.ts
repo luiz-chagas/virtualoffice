@@ -75,6 +75,9 @@ class GameScene extends Phaser.Scene {
       .setCollisionByProperty({ collides: true })
       .setDepth(1);
     map
+      .createLayer("Furniture2", [furnitureTileset, furniture2Tileset])
+      .setCollisionByProperty({ collides: true });
+    map
       .createLayer("Furniture", [
         furnitureTileset,
         furniture2Tileset,
@@ -174,7 +177,7 @@ class GameScene extends Phaser.Scene {
       player.anims.play(`${myData.avatar}-front-walk`, true);
     } else {
       player.anims.stop();
-      player.setTexture(myData.avatar, DIR_FRAMES[myData.facing]);
+      player.setTexture(myData.avatar, DIR_FRAMES[facing]);
     }
 
     player

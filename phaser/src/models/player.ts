@@ -8,7 +8,7 @@ class BasePlayer extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add
       .existing(this)
       .setCollideWorldBounds(true)
-      .setDisplaySize(30, 30)
+      .setDisplaySize(35, 35)
       .setOrigin(0)
       .setData(
         "name",
@@ -87,9 +87,10 @@ export class LocalPlayer extends BasePlayer {
     playerData: PlayerData
   ) {
     super(scene, playerData);
-    this.setBodySize(32, 32, false);
-    this.setOffset(16, 32);
+    this.setBodySize(30, 30, false);
+    this.setOffset(16, 34);
     scene.physics.add.collider(this, map.getLayer("Furniture").tilemapLayer);
+    scene.physics.add.collider(this, map.getLayer("Furniture2").tilemapLayer);
     scene.physics.add.collider(this, map.getLayer("Walls").tilemapLayer);
     scene.physics.add.collider(this, map.getLayer("Objects").tilemapLayer);
   }
