@@ -1,8 +1,3 @@
-const mediaConstraints = {
-  video: true,
-  audio: true,
-};
-
 const connections: Record<string, RTCPeerConnection> = {};
 const streams: Record<string, HTMLAudioElement> = {};
 const peerStreams: Record<string, MediaStream> = {};
@@ -107,7 +102,27 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
     connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
   };
 
-  myStream = navigator.mediaDevices.getUserMedia(mediaConstraints);
+  myStream = navigator.mediaDevices.getUserMedia({
+    audio: {
+      autoGainControl: {
+        ideal: true,
+      },
+      echoCancellation: {
+        ideal: true,
+      },
+      noiseSuppression: {
+        ideal: true,
+      },
+    },
+    video: {
+      aspectRatio: {
+        ideal: 1.777777778,
+      },
+      frameRate: {
+        max: 30,
+      },
+    },
+  });
 
   socket.on("audio-offer", handleOffer);
   socket.on("audio-answer", handleAnswer);
