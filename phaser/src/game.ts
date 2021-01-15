@@ -296,7 +296,7 @@ class GameScene extends Phaser.Scene {
         }
       });
       toDelete.forEach((id) => {
-        gameState[id].getData("name").destroy();
+        gameState[id].getData("name").setVisible(false);
         gameState[id].destroy();
         removeStreamFromDOM(id);
         delete gameState[id];

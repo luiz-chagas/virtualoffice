@@ -4,24 +4,21 @@ import { DIR_FRAMES, PLAYER_SPEED } from "../utils/contants";
 class BasePlayer extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, { x, y, name, avatar }: PlayerData) {
     super(scene, x, y, avatar, 0);
+    const nameTag = scene.add
+      .text(x + 15, y - 10, name, {
+        fontFamily: "Arial",
+        color: "#48fb00",
+        fontSize: "10px",
+        resolution: 2,
+      })
+      .setOrigin(0.5)
+      .setDepth(2);
     scene.physics.add
       .existing(this)
       .setCollideWorldBounds(true)
       .setDisplaySize(35, 35)
-      .setOrigin(0)
-      .setData(
-        "name",
-        scene.add
-          .text(x + 15, y - 10, name, {
-            fontFamily: "Arial",
-            color: "#48fb00",
-            fontSize: "10px",
-            resolution: 2,
-          })
-          .setOrigin(0.5)
-          .setDepth(2)
-      );
-    scene.add.existing(this);
+      .setOrigin(0);
+    scene.add.existing(this).setData("name", nameTag);
   }
 }
 
@@ -42,26 +39,27 @@ export class RemotePlayer extends BasePlayer {
 
     // Other Players Movement
     this.setVelocity(0);
-    if (this.x < data.x - err) {
+
+    if (this.body.x < data.x - err) {
       this.setVelocityX(PLAYER_SPEED);
       if (!isMoving) {
         this.anims.play(`${data.avatar}-right-walk`, true);
       }
       isMoving = true;
-    } else if (this.x > data.x + err) {
+    } else if (this.body.x > data.x + err) {
       this.setVelocityX(-PLAYER_SPEED);
       if (!isMoving) {
         this.anims.play(`${data.avatar}-left-walk`, true);
       }
       isMoving = true;
     }
-    if (this.y > data.y + err) {
+    if (this.body.y > data.y + err) {
       this.setVelocityY(-PLAYER_SPEED);
       if (!isMoving) {
         this.anims.play(`${data.avatar}-back-walk`, true);
       }
       isMoving = true;
-    } else if (this.y < data.y - err) {
+    } else if (this.body.y < data.y - err) {
       this.setVelocityY(PLAYER_SPEED);
       if (!isMoving) {
         this.anims.play(`${data.avatar}-front-walk`, true);
