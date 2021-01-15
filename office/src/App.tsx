@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Window, TextBox, Button } from "react-windows-xp";
 
 function App() {
   const [name, setName] = useState("");
   const [showPhaser, setShowPhaser] = useState(false);
+
+  useEffect(() => {
+    const name = localStorage.getItem("name");
+    if (name) {
+      setName(name);
+    }
+  }, []);
 
   if (showPhaser) {
     return (
@@ -73,7 +80,10 @@ function App() {
               }}
             >
               <Button
-                onClick={() => setShowPhaser(true)}
+                onClick={() => {
+                  setShowPhaser(true);
+                  localStorage.setItem("name", name);
+                }}
                 disabled={name.length === 0}
               >
                 Join Loft
