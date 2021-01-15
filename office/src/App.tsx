@@ -23,7 +23,7 @@ function App() {
             border: "none",
           }}
           title="Crema Virtual Office"
-          src={`/phaser?name=${name}`}
+          src={`/phaser?name=${name}&date=${Date.now()}`}
         />
       </div>
     );
