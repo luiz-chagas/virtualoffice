@@ -9,7 +9,8 @@ import {
   demoteAllToAudio,
   demoteToAudio,
   promoteToVideo,
-} from "./voice";
+  changeVolume,
+} from "./RTC";
 import { LocalPlayer, RemotePlayer } from "./models/player";
 import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
 
@@ -19,11 +20,12 @@ let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
 let facing = "south";
 let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody;
+let isFirstServerUpdate = true;
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
-const { connect, changeVolume } = setupHandlers(socket);
+const { connectToRTC } = setupHandlers(socket);
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -162,7 +164,9 @@ class GameScene extends Phaser.Scene {
             });
           } else {
             gameState[id] = new RemotePlayer(this, playerData);
-            connect(id);
+            if (isFirstServerUpdate) {
+              connectToRTC(id);
+            }
           }
         } else {
           if (id !== socket.id) {
@@ -170,6 +174,7 @@ class GameScene extends Phaser.Scene {
           }
         }
       });
+      isFirstServerUpdate = false;
     });
   }
 

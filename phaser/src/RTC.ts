@@ -13,7 +13,9 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
     if (connections[target]) {
       return;
     }
+
     const myPeerConnection = await createPeerConnection(target);
+
     myPeerConnection.onnegotiationneeded = async () => {
       const offer = await myPeerConnection.createOffer();
       if (myPeerConnection.signalingState !== "stable") {
@@ -55,6 +57,13 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
     }
     const answer = await myPeerConnection.createAnswer();
     await myPeerConnection.setLocalDescription(answer);
+    socket.emit("audio-answer", {
+      name: target,
+      target: name,
+      type: "audio-answer",
+      sdp: myPeerConnection.localDescription,
+    });
+
     myPeerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         socket.emit("new-ice-candidate", {
@@ -78,12 +87,6 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
         sdp: myPeerConnection.localDescription,
       });
     };
-    socket.emit("audio-answer", {
-      name: target,
-      target: name,
-      type: "audio-answer",
-      sdp: myPeerConnection.localDescription,
-    });
   };
 
   const handleIceCandidate = ({
@@ -111,19 +114,14 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
   socket.on("new-ice-candidate", handleIceCandidate);
   socket.on("hang-up", handleHangUp);
 
-  const changeVolume = (player: string, volume: number) => {
-    if (streams[player]) {
-      streams[player].volume = volume;
-    }
-  };
-
-  return { connect: makeOffer, changeVolume };
+  return { connectToRTC: makeOffer };
 };
 
 const createPeerConnection = async (target: string) => {
   if (connections[target]) {
     return connections[target];
   }
+
   const connection = new RTCPeerConnection({
     iceServers: [
       {
@@ -131,6 +129,7 @@ const createPeerConnection = async (target: string) => {
       },
     ],
   });
+
   connections[target] = connection;
   const stream = await myStream;
   stream.getTracks().forEach((track) => connection.addTrack(track));
@@ -138,9 +137,9 @@ const createPeerConnection = async (target: string) => {
     if (data.streams && data.streams[0]) {
       peerStreams[target] = data.streams[0];
     } else {
-      const newStream = new MediaStream();
-      newStream.addTrack(data.track);
-      peerStreams[target] = newStream;
+      const streamObj = peerStreams[target] || new MediaStream();
+      streamObj.addTrack(data.track);
+      peerStreams[target] = streamObj;
     }
     addAudioToDOM(target, peerStreams[target]);
   };
@@ -150,6 +149,12 @@ const createPeerConnection = async (target: string) => {
     }
   };
   return connection;
+};
+
+export const changeVolume = (player: string, volume: number) => {
+  if (streams[player]) {
+    streams[player].volume = volume;
+  }
 };
 
 const addAudioToDOM = (userId: string, stream: MediaStream) => {
@@ -205,6 +210,7 @@ export const addSelfVideoToDom = (userId: string) => {
   });
   mediaElement.autoplay = true;
   mediaElement.volume = 0;
+  mediaElement.muted = true;
   mediaElement.className = "user-video";
   streams[userId] = mediaElement;
 };
