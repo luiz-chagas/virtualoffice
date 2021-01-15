@@ -175,15 +175,14 @@ const addVideoToDOM = (userId: string, stream: MediaStream) => {
 };
 
 export const promoteToVideo = (userId: string) => {
-  console.log(streams[userId]?.tagName);
-  if (streams[userId]?.tagName === "video") {
+  if (streams[userId]?.tagName === "VIDEO") {
     return;
   }
   addVideoToDOM(userId, peerStreams[userId]);
 };
 
 export const demoteToAudio = (userId: string) => {
-  if (streams[userId]?.tagName === "audio") {
+  if (streams[userId]?.tagName === "AUDIO") {
     return;
   }
   addAudioToDOM(userId, peerStreams[userId]);
