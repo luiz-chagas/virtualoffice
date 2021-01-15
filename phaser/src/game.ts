@@ -19,7 +19,7 @@ let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
 let facing = "south";
-let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody;
+let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
 let isFirstServerUpdate = true;
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
@@ -263,13 +263,13 @@ class GameScene extends Phaser.Scene {
           demoteToAudio(id);
         }
       } else {
-        const dist = getDistanceBetweenPlayers(player, otherPlayer);
+        const dist = getDistanceBetweenPlayers(myData, otherPlayer);
         if (dist < 150) {
           changeVolume(id, 1);
         } else if (dist > 350) {
           changeVolume(id, 0);
         } else {
-          changeVolume(id, -dist / 250 + 1.6);
+          changeVolume(id, -0.005 * dist + 1.75);
         }
       }
     });

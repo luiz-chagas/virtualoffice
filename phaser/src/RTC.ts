@@ -1,5 +1,5 @@
 const connections: Record<string, RTCPeerConnection> = {};
-const streams: Record<string, HTMLAudioElement> = {};
+const streams: Record<string, HTMLAudioElement | HTMLVideoElement> = {};
 const peerStreams: Record<string, MediaStream> = {};
 let myStream: Promise<MediaStream>;
 
@@ -174,7 +174,9 @@ export const changeVolume = (player: string, volume: number) => {
 
 const addAudioToDOM = (userId: string, stream: MediaStream) => {
   removeStreamFromDOM(userId);
+  const audioContainer = document.getElementById("audios");
   const mediaElement = document.createElement("audio");
+  audioContainer.appendChild(mediaElement);
   mediaElement.volume = 1;
   mediaElement.id = userId;
   mediaElement.srcObject = stream;
