@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Wallpaper, Window, TextBox, Button } from "react-windows-xp";
+import { Window, TextBox, Button } from "react-windows-xp";
 
 function App() {
   const [name, setName] = useState("");
@@ -30,60 +30,59 @@ function App() {
   }
 
   return (
-    <Wallpaper fullScreen>
+    <div
+      style={{
+        display: "flex",
+        flexGrow: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#3A6EA5",
+      }}
+    >
       <div
         style={{
-          display: "flex",
-          height: "100%",
-          alignItems: "center",
-          justifyContent: "center",
+          maxWidth: 400,
         }}
       >
-        <div
-          style={{
-            maxWidth: 400,
+        <Window
+          title="Connect to Crema"
+          showClose
+          onClose={() => {
+            window.location.href =
+              "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
           }}
         >
-          <Window
-            title="Connect to Crema"
-            showClose
-            onClose={() => {
-              window.location.href =
-                "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-            }}
-          >
-            <div style={{ padding: "8px" }}>
-              <TextBox
-                label="Who are you?"
-                stacked
-                id="cremaname"
-                placeholder="Your Name Goes Here"
-                value={name}
-                onChange={(newName) => {
-                  if (newName.length < 13) {
-                    setName(newName);
-                  }
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  paddingTop: "16px",
-                }}
+          <div style={{ padding: "8px" }}>
+            <TextBox
+              label="Who are you?"
+              stacked
+              id="cremaname"
+              placeholder="Your Name Goes Here"
+              value={name}
+              onChange={(newName) => {
+                if (newName.length < 13) {
+                  setName(newName);
+                }
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                paddingTop: "16px",
+              }}
+            >
+              <Button
+                onClick={() => setShowPhaser(true)}
+                disabled={name.length === 0}
               >
-                <Button
-                  onClick={() => setShowPhaser(true)}
-                  disabled={name.length === 0}
-                >
-                  Join Loft
-                </Button>
-              </div>
+                Join Loft
+              </Button>
             </div>
-          </Window>
-        </div>
+          </div>
+        </Window>
       </div>
-    </Wallpaper>
+    </div>
   );
 }
 

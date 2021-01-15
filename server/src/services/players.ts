@@ -7,6 +7,7 @@ interface Player {
   facing: "north" | "south" | "east" | "west";
   avatar: string;
   name: string;
+  room: string | null;
 }
 
 const getRandomAvatar = () => {
@@ -50,6 +51,7 @@ export const makePlayersService = (socketServer: Server) => {
         name: name.trim().substring(0, 12),
         avatar: getRandomAvatar(),
         facing: "south",
+        room: null,
       });
     });
   });

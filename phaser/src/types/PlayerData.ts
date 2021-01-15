@@ -5,4 +5,5 @@ export interface PlayerData {
   avatar: string;
   name: string;
   facing: "north" | "south" | "east" | "west";
+  room: string | null;
 }

@@ -4,7 +4,6 @@ import { DIR_FRAMES, PLAYER_SPEED } from "../utils/contants";
 class BasePlayer extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, { x, y, name, avatar }: PlayerData) {
     super(scene, x, y, avatar, 0);
-
     scene.physics.add
       .existing(this)
       .setCollideWorldBounds(true)
@@ -29,6 +28,8 @@ class BasePlayer extends Phaser.Physics.Arcade.Sprite {
 export class RemotePlayer extends BasePlayer {
   constructor(scene: Phaser.Scene, playerData: PlayerData) {
     super(scene, playerData);
+    this.setBodySize(30, 30, false);
+    this.setOffset(16, 34);
   }
 
   setNewData(data: PlayerData) {

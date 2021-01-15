@@ -8,6 +8,29 @@
       crossorigin="anonymous"
     ></script>
     <script src="game.js"></script>
+    <style>
+      .user-video {
+        display: flex;
+        width: 20%;
+        height: 100%;
+        flex-grow: 1;
+      }
+      .translucent {
+        opacity: 0.5;
+      }
+    </style>
   </head>
-  <body style="margin: 0px; background: black"></body>
+  <body style="margin: 0px; background: black">
+    <div
+      id="videos"
+      style="
+        position: absolute;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-wrap: wrap;
+      "
+    ></div>
+    <div id="game"></div>
+  </body>
 </html>

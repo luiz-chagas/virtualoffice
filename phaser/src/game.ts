@@ -2,7 +2,14 @@ import Phaser from "phaser";
 import { HUDScene } from "./HUD";
 import { connectToServer, spawn } from "./socket";
 import { PlayerData } from "./types/PlayerData";
-import { setupHandlers } from "./voice";
+import {
+  setupHandlers,
+  removeStreamFromDOM,
+  addSelfVideoToDom,
+  demoteAllToAudio,
+  demoteToAudio,
+  promoteToVideo,
+} from "./voice";
 import { LocalPlayer, RemotePlayer } from "./models/player";
 import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
 
@@ -11,11 +18,12 @@ let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
 let facing = "south";
+let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody;
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
-const { connectToAudio, changeVolume } = setupHandlers(socket);
+const { connect, changeVolume } = setupHandlers(socket);
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -93,6 +101,21 @@ class GameScene extends Phaser.Scene {
       spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
     spawn(socket, (playerSpawnPoint as any).x, (playerSpawnPoint as any).y);
 
+    const conferenceRooms = map.filterObjects(
+      "Conference Rooms",
+      (obj) => obj.type === "ConferenceRoom"
+    );
+    const conferenceRoomObjs = map
+      .createFromObjects("Conference Rooms", {})
+      .map((room, index) => {
+        (room as Phaser.GameObjects.Sprite)
+          .setOrigin(0, 0)
+          .setVisible(false)
+          .setPosition(conferenceRooms[index].x, conferenceRooms[index].y);
+        this.physics.add.existing(room);
+        return room;
+      });
+
     const animationManager = this.anims;
     registerAnimations("player1", animationManager);
     registerAnimations("player2", animationManager);
@@ -110,6 +133,17 @@ class GameScene extends Phaser.Scene {
 
     cursors = this.input.keyboard.createCursorKeys();
 
+    const handlePlayerInConferenceRoom: ArcadePhysicsCallback = (
+      player,
+      room
+    ) => {
+      if (conferenceRoom !== room) {
+        // console.log(`Player has joined ${room.name}`);
+        conferenceRoom = room;
+        addSelfVideoToDom(socket.id);
+      }
+    };
+
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
       this.events.emit("updatePlayerCount", Object.keys(dataState).length);
@@ -117,9 +151,18 @@ class GameScene extends Phaser.Scene {
         if (!gameState[id]) {
           if (id === socket.id) {
             gameState[id] = new LocalPlayer(this, map, playerData);
+            conferenceRoomObjs.forEach((room) => {
+              this.physics.add.overlap(
+                gameState[id],
+                room,
+                handlePlayerInConferenceRoom,
+                null,
+                null
+              );
+            });
           } else {
             gameState[id] = new RemotePlayer(this, playerData);
-            connectToAudio(id);
+            connect(id);
           }
         } else {
           if (id !== socket.id) {
@@ -136,6 +179,15 @@ class GameScene extends Phaser.Scene {
 
     if (!player) {
       return;
+    }
+
+    if (conferenceRoom) {
+      if (!this.physics.overlap(conferenceRoom, player)) {
+        // console.log(`Player has left the room`);
+        conferenceRoom = null;
+        removeStreamFromDOM(socket.id);
+        demoteAllToAudio();
+      }
     }
 
     this.cameras.main.startFollow(player);
@@ -162,6 +214,13 @@ class GameScene extends Phaser.Scene {
     // Normalize and scale the velocity so that player can't move faster along a diagonal
     body.velocity.normalize().scale(PLAYER_SPEED);
 
+    // IF player is moving, change videos opacity
+    if (body.velocity.x !== 0 || body.velocity.y !== 0) {
+      document.getElementById("videos").className = "translucent";
+    } else {
+      document.getElementById("videos").className = "";
+    }
+
     // Update the animation last and give left/right animations precedence over up/down animations
     if (cursors.left.isDown) {
       facing = "west";
@@ -186,14 +245,27 @@ class GameScene extends Phaser.Scene {
       .setPosition(player.x + 15, player.y - 10);
 
     Object.entries(gameState).forEach(([id, otherPlayer]) => {
+      if (id === socket.id) {
+        return;
+      }
       // Other Players Audio Volume
-      const dist = getDistanceBetweenPlayers(player, otherPlayer);
-      if (dist < 150) {
-        changeVolume(id, 1);
-      } else if (dist > 400) {
-        changeVolume(id, 0);
+      if (serverStateData[id]?.room || conferenceRoom) {
+        if (serverStateData[id]?.room === conferenceRoom?.name) {
+          changeVolume(id, 1);
+          promoteToVideo(id);
+        } else {
+          changeVolume(id, 0);
+          demoteToAudio(id);
+        }
       } else {
-        changeVolume(id, -dist / 250 + 1.6);
+        const dist = getDistanceBetweenPlayers(player, otherPlayer);
+        if (dist < 150) {
+          changeVolume(id, 1);
+        } else if (dist > 350) {
+          changeVolume(id, 0);
+        } else {
+          changeVolume(id, -dist / 250 + 1.6);
+        }
       }
     });
 
@@ -205,7 +277,7 @@ class GameScene extends Phaser.Scene {
           y: body.y,
           facing,
         };
-        socket.emit("move", lastPos);
+        socket.emit("move", { ...lastPos, room: conferenceRoom?.name ?? null });
       }
     }
 
@@ -221,6 +293,7 @@ class GameScene extends Phaser.Scene {
       toDelete.forEach((id) => {
         gameState[id].getData("name").destroy();
         gameState[id].destroy();
+        removeStreamFromDOM(id);
         delete gameState[id];
       });
     }
@@ -282,7 +355,7 @@ new Phaser.Game({
   type: Phaser.AUTO,
   scale: {
     mode: Phaser.Scale.ScaleModes.FIT,
-    parent: "gameScene",
+    parent: "game",
     autoCenter: Phaser.Scale.Center.CENTER_BOTH,
     width: "100%",
     height: "100%",
