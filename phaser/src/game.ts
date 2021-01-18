@@ -14,7 +14,7 @@ import {
 import { LocalPlayer, RemotePlayer } from "./models/player";
 import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
 
-let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+let input: KeyboardInput;
 let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
@@ -133,7 +133,10 @@ class GameScene extends Phaser.Scene {
         this.physics.world.bounds.height
       );
 
-    cursors = this.input.keyboard.createCursorKeys();
+    input = this.input.keyboard.addKeys(
+      "W,A,S,D,UP,DOWN,LEFT,RIGHT"
+    ) as KeyboardInput;
+    console.log(input);
 
     const handlePlayerInConferenceRoom: ArcadePhysicsCallback = (
       player,
@@ -229,16 +232,16 @@ class GameScene extends Phaser.Scene {
     body.setVelocity(0);
 
     // Horizontal movement
-    if (cursors.left.isDown) {
+    if (input.LEFT.isDown || input.A.isDown) {
       body.setVelocityX(-PLAYER_SPEED);
-    } else if (cursors.right.isDown) {
+    } else if (input.RIGHT.isDown || input.D.isDown) {
       body.setVelocityX(PLAYER_SPEED);
     }
 
     // Vertical movement
-    if (cursors.up.isDown) {
+    if (input.UP.isDown || input.W.isDown) {
       body.setVelocityY(-PLAYER_SPEED);
-    } else if (cursors.down.isDown) {
+    } else if (input.DOWN.isDown || input.S.isDown) {
       body.setVelocityY(PLAYER_SPEED);
     }
 
@@ -253,16 +256,16 @@ class GameScene extends Phaser.Scene {
     }
 
     // Update the animation last and give left/right animations precedence over up/down animations
-    if (cursors.left.isDown) {
+    if (input.LEFT.isDown || input.A.isDown) {
       facing = "west";
       player.anims.play(`${myData.avatar}-left-walk`, true);
-    } else if (cursors.right.isDown) {
+    } else if (input.RIGHT.isDown || input.D.isDown) {
       facing = "east";
       player.anims.play(`${myData.avatar}-right-walk`, true);
-    } else if (cursors.up.isDown) {
+    } else if (input.UP.isDown || input.W.isDown) {
       facing = "north";
       player.anims.play(`${myData.avatar}-back-walk`, true);
-    } else if (cursors.down.isDown) {
+    } else if (input.DOWN.isDown || input.S.isDown) {
       facing = "south";
       player.anims.play(`${myData.avatar}-front-walk`, true);
     } else {
@@ -377,3 +380,14 @@ new Phaser.Game({
     },
   },
 });
+
+interface KeyboardInput {
+  W: Phaser.Input.Keyboard.Key;
+  A: Phaser.Input.Keyboard.Key;
+  S: Phaser.Input.Keyboard.Key;
+  D: Phaser.Input.Keyboard.Key;
+  UP: Phaser.Input.Keyboard.Key;
+  DOWN: Phaser.Input.Keyboard.Key;
+  LEFT: Phaser.Input.Keyboard.Key;
+  RIGHT: Phaser.Input.Keyboard.Key;
+}
