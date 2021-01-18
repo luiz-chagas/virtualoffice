@@ -150,9 +150,11 @@ class GameScene extends Phaser.Scene {
       serverStateData = dataState;
       this.events.emit("updatePlayerCount", Object.keys(dataState).length);
       Object.entries(dataState).forEach(([id, playerData]) => {
+        // Handling player creation
         if (!gameState[id]) {
           if (id === socket.id) {
             gameState[id] = new LocalPlayer(this, map, playerData);
+            this.cameras.main.startFollow(gameState[id]);
             conferenceRoomObjs.forEach((room) => {
               this.physics.add.overlap(
                 gameState[id],
@@ -170,7 +172,33 @@ class GameScene extends Phaser.Scene {
           }
         } else {
           if (id !== socket.id) {
+            // Update Remote Player Position
             (gameState[id] as RemotePlayer).setNewData(playerData);
+
+            // Remove Player Audio/Video Volume
+            if (playerData.room || conferenceRoom) {
+              if (playerData.room === conferenceRoom?.name) {
+                changeVolume(id, 1);
+                promoteToVideo(id);
+              } else {
+                changeVolume(id, 0);
+                demoteToAudio(id);
+              }
+            } else {
+              if (gameState[socket.id]) {
+                const dist = getDistanceBetweenPlayers(
+                  gameState[socket.id],
+                  playerData
+                );
+                if (dist < 150) {
+                  changeVolume(id, 1);
+                } else if (dist > 350) {
+                  changeVolume(id, 0);
+                } else {
+                  changeVolume(id, -0.005 * dist + 1.75);
+                }
+              }
+            }
           }
         }
       });
@@ -194,8 +222,6 @@ class GameScene extends Phaser.Scene {
         demoteAllToAudio();
       }
     }
-
-    this.cameras.main.startFollow(player);
 
     const body = player.body as Phaser.Physics.Arcade.Body;
 
@@ -244,35 +270,7 @@ class GameScene extends Phaser.Scene {
       player.setTexture(myData.avatar, DIR_FRAMES[facing]);
     }
 
-    player
-      .getData("name")
-      .setText(myData.name)
-      .setPosition(player.x + 15, player.y - 10);
-
-    Object.entries(gameState).forEach(([id, otherPlayer]) => {
-      if (id === socket.id) {
-        return;
-      }
-      // Other Players Audio Volume
-      if (serverStateData[id]?.room || conferenceRoom) {
-        if (serverStateData[id]?.room === conferenceRoom?.name) {
-          changeVolume(id, 1);
-          promoteToVideo(id);
-        } else {
-          changeVolume(id, 0);
-          demoteToAudio(id);
-        }
-      } else {
-        const dist = getDistanceBetweenPlayers(myData, otherPlayer);
-        if (dist < 150) {
-          changeVolume(id, 1);
-        } else if (dist > 350) {
-          changeVolume(id, 0);
-        } else {
-          changeVolume(id, -0.005 * dist + 1.75);
-        }
-      }
-    });
+    Object.values(gameState).forEach((sprite) => sprite.update());
 
     if (time > lastUpdate + 33) {
       lastUpdate = time;

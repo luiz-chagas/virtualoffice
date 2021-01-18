@@ -20,6 +20,13 @@ class BasePlayer extends Phaser.Physics.Arcade.Sprite {
       .setOrigin(0);
     scene.add.existing(this).setData("name", nameTag);
   }
+
+  update() {
+    (this.getData("name") as Phaser.GameObjects.Text).setPosition(
+      this.x + 15,
+      this.y - 10
+    );
+  }
 }
 
 export class RemotePlayer extends BasePlayer {
@@ -72,10 +79,6 @@ export class RemotePlayer extends BasePlayer {
     }
 
     this.body.velocity.normalize().scale(PLAYER_SPEED);
-    // Other Players Name
-    this.getData("name")
-      .setText(data.name)
-      .setPosition(this.x + 15, this.y - 10);
   }
 }
 
