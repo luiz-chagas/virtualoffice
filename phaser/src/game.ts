@@ -34,19 +34,10 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image(
-      "furniture",
-      "assets/world/d3f7sm6-00fc3673-65fd-4ca5-9fc5-f61783440edf.png"
-    );
-    this.load.image(
-      "furniture2",
-      "assets/world/darwtlj-dda4428b-1a3f-422e-81c5-f7844b267d68.png"
-    );
-    this.load.image("furniture3", "assets/world/more-furniture.png");
-    this.load.image(
-      "ground",
-      "assets/world/d4becnf-37d112e7-aaf7-4c8d-9568-b474d452c114.png"
-    );
+    this.load.image("furniture", "assets/world/furniture-1.png");
+    this.load.image("furniture2", "assets/world/furniture-2.png");
+    this.load.image("furniture3", "assets/world/furniture-3.png");
+    this.load.image("ground", "assets/world/ground.png");
     this.load.image("medieval", "assets/world/medieval.png");
     this.load.tilemapTiledJSON("map", "assets/world/LoftMap.json");
     this.load.spritesheet("player1", "assets/player/char1.png", {

@@ -159,7 +159,7 @@
         {
          "columns":18,
          "firstgid":1,
-         "image":"d4becnf-37d112e7-aaf7-4c8d-9568-b474d452c114.png",
+         "image":"ground.png",
          "imageheight":256,
          "imagewidth":288,
          "margin":0,
@@ -172,7 +172,7 @@
         {
          "columns":32,
          "firstgid":289,
-         "image":"d3f7sm6-00fc3673-65fd-4ca5-9fc5-f61783440edf.png",
+         "image":"furniture-1.png",
          "imageheight":512,
          "imagewidth":512,
          "margin":0,
@@ -9402,7 +9402,7 @@
         {
          "columns":32,
          "firstgid":1313,
-         "image":"darwtlj-dda4428b-1a3f-422e-81c5-f7844b267d68.png",
+         "image":"furniture-2.png",
          "imageheight":512,
          "imagewidth":512,
          "margin":0,
@@ -9415,7 +9415,7 @@
         {
          "columns":32,
          "firstgid":2337,
-         "image":"more-furniture.png",
+         "image":"furniture-3.png",
          "imageheight":1024,
          "imagewidth":512,
          "margin":0,
@@ -27867,7 +27867,7 @@
          "margin":1,
          "name":"Medieval",
          "spacing":2,
-         "tilecount":484,
+         "tilecount":400,
          "tileheight":16,
          "tiles":[
                 {
