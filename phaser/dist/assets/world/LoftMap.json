@@ -96,7 +96,7 @@
                  "type":"SpawnPoint",
                  "visible":true,
                  "width":0,
-                 "x":207.6928,
+                 "x":207.693,
                  "y":139.845
                 }],
          "opacity":1,
@@ -27862,12 +27862,12 @@
          "columns":20,
          "firstgid":4385,
          "image":"medieval.png",
-         "imageheight":320,
-         "imagewidth":320,
-         "margin":0,
+         "imageheight":360,
+         "imagewidth":360,
+         "margin":1,
          "name":"Medieval",
-         "spacing":0,
-         "tilecount":400,
+         "spacing":2,
+         "tilecount":484,
          "tileheight":16,
          "tiles":[
                 {

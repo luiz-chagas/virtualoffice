@@ -15375,8 +15375,8 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="4385" name="Medieval" tilewidth="16" tileheight="16" tilecount="400" columns="20">
-  <image source="../dist/assets/world/medieval.png" width="320" height="320"/>
+ <tileset firstgid="4385" name="Medieval" tilewidth="16" tileheight="16" spacing="2" margin="1" tilecount="484" columns="20">
+  <image source="../dist/assets/world/medieval.png" width="360" height="360"/>
   <tile id="0">
    <properties>
     <property name="collides" type="bool" value="true"/>
