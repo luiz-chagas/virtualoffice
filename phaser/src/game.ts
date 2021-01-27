@@ -127,7 +127,6 @@ class GameScene extends Phaser.Scene {
     input = this.input.keyboard.addKeys(
       "W,A,S,D,UP,DOWN,LEFT,RIGHT"
     ) as KeyboardInput;
-    console.log(input);
 
     const handlePlayerInConferenceRoom: ArcadePhysicsCallback = (
       player,
