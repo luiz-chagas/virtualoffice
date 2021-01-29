@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { EventEmitter } from "events";
 
 interface Player {
   id: string;
@@ -16,6 +17,7 @@ const getRandomAvatar = () => {
 };
 
 export const makePlayersService = (socketServer: Server) => {
+  const events = new EventEmitter();
   const players: Record<string, Player> = {};
 
   const removePlayer = (socketId: string) => {
@@ -48,15 +50,18 @@ export const makePlayersService = (socketServer: Server) => {
         id: socket.id,
         x,
         y,
-        name: name.trim().substring(0, 12),
+        name: name,
         avatar: getRandomAvatar(),
         facing: "south",
         room: null,
       });
+      if (Object.keys(players).length === 1) {
+        events.emit("firstPlayerJoined", name);
+      }
     });
   });
 
   setInterval(updateGameState, 33);
 
-  return;
+  return events;
 };
