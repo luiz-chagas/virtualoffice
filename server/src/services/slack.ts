@@ -48,7 +48,7 @@ const makeMessage = (name: string) => {
           type: "plain_text",
           text: "Join Office",
         },
-        url: "http://cremaoffice.fun",
+        url: "https://cremaoffice.fun",
       },
     },
   ];
