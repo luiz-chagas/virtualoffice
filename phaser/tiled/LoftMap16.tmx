@@ -17378,7 +17378,7 @@
    </properties>
   </tile>
  </tileset>
- <layer id="3" name="Floor" width="62" height="44">
+ <layer id="3" name="Floor" width="62" height="44" locked="1">
   <data encoding="csv">
 145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,
 145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,145,
@@ -17626,13 +17626,13 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="8" name="Conference Rooms" visible="0" locked="1">
+ <objectgroup id="8" name="Conference Rooms" locked="1">
   <object id="8" name="Carlos" type="ConferenceRoom" x="16" y="528" width="141" height="158"/>
   <object id="9" name="Carli" type="ConferenceRoom" x="16" y="48" width="141" height="207"/>
   <object id="11" name="Carlyle" type="ConferenceRoom" x="657.5" y="494.5" width="317" height="129"/>
   <object id="12" name="Kitchen" type="ConferenceRoom" x="625.075" y="48.9085" width="348.324" height="397.232"/>
  </objectgroup>
- <objectgroup id="9" name="Mute Areas">
+ <objectgroup id="9" name="Mute Areas" locked="1">
   <object id="13" type="MuteSpot" x="144.451" y="304.756" width="32" height="32"/>
   <object id="14" type="MuteSpot" x="16.1726" y="128.777" width="32" height="32"/>
   <object id="15" type="MuteSpot" x="16.1726" y="529.042" width="32" height="32"/>
