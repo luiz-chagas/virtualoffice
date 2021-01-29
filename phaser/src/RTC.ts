@@ -104,15 +104,9 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
 
   myStream = navigator.mediaDevices.getUserMedia({
     audio: {
-      autoGainControl: {
-        ideal: true,
-      },
-      echoCancellation: {
-        ideal: true,
-      },
-      noiseSuppression: {
-        ideal: true,
-      },
+      autoGainControl: true,
+      echoCancellation: true,
+      noiseSuppression: true,
     },
     video: {
       aspectRatio: {
@@ -147,15 +141,12 @@ const createPeerConnection = async (target: string) => {
 
   connections[target] = connection;
   const stream = await myStream;
-  stream.getTracks().forEach((track) => connection.addTrack(track));
+  stream.getTracks().forEach((track) => connection.addTrack(track, stream));
   connection.ontrack = (data) => {
-    if (data.streams && data.streams[0]) {
-      peerStreams[target] = data.streams[0];
-    } else {
-      const streamObj = peerStreams[target] || new MediaStream();
-      streamObj.addTrack(data.track);
-      peerStreams[target] = streamObj;
-    }
+    const streamObj =
+      peerStreams[target] || data.streams[0] || new MediaStream();
+    streamObj.addTrack(data.track);
+    peerStreams[target] = streamObj;
     addAudioToDOM(target, peerStreams[target]);
   };
   connection.oniceconnectionstatechange = () => {
@@ -237,6 +228,17 @@ export const removeStreamFromDOM = (userId: string) => {
     .querySelectorAll(`[id="${userId}"]`)
     .forEach((element) => element.remove());
 };
+
+const toggleMute = (isMuted: boolean) => {
+  myStream.then((stream) => {
+    stream.getAudioTracks().forEach((track) => {
+      track.enabled = !isMuted;
+    });
+  });
+};
+
+export const muteVoice = () => toggleMute(true);
+export const unmuteVoice = () => toggleMute(false);
 
 interface NegotiationPayload {
   name: string;

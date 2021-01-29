@@ -10,6 +10,8 @@ import {
   demoteToAudio,
   promoteToVideo,
   changeVolume,
+  muteVoice,
+  unmuteVoice,
 } from "./RTC";
 import { LocalPlayer, RemotePlayer } from "./models/player";
 import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
@@ -19,8 +21,11 @@ let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
 let facing = "south";
-let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
+
 let isFirstServerUpdate = true;
+
+let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
+let muteSpot: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
@@ -98,6 +103,7 @@ class GameScene extends Phaser.Scene {
       "Conference Rooms",
       (obj) => obj.type === "ConferenceRoom"
     );
+
     const conferenceRoomObjs = map
       .createFromObjects("Conference Rooms", {})
       .map((room, index) => {
@@ -106,7 +112,29 @@ class GameScene extends Phaser.Scene {
           .setVisible(false)
           .setPosition(conferenceRooms[index].x, conferenceRooms[index].y);
         this.physics.add.existing(room);
+        const roomBounds = (room as Phaser.GameObjects.Sprite).getBounds();
+        this.add.graphics().lineStyle(1, 0x0e71eb).strokeRectShape(roomBounds);
+
         return room;
+      });
+
+    const muteSpots = map.filterObjects(
+      "Mute Areas",
+      (obj) => obj.type === "MuteSpot"
+    );
+
+    const muteSpotObjs = map
+      .createFromObjects("Mute Areas", {})
+      .map((spot, index) => {
+        (spot as Phaser.GameObjects.Sprite)
+          .setOrigin(0, 0)
+          .setVisible(false)
+          .setPosition(muteSpots[index].x, muteSpots[index].y);
+        this.physics.add.existing(spot);
+        const spotBounds = (spot as Phaser.GameObjects.Sprite).getBounds();
+        this.add.graphics().lineStyle(1, 0xe02828).strokeRectShape(spotBounds);
+
+        return spot;
       });
 
     const animationManager = this.anims;
@@ -139,9 +167,18 @@ class GameScene extends Phaser.Scene {
       }
     };
 
+    const handlePlayerInMuteSpot: ArcadePhysicsCallback = (player, spot) => {
+      if (muteSpot !== spot) {
+        // console.log(`Player is now muted`);
+        muteVoice();
+        this.events.emit("playerMuted", true);
+        muteSpot = spot;
+      }
+    };
+
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
-      this.events.emit("updatePlayerCount", Object.keys(dataState).length);
+      this.events.emit("playerCount", Object.keys(dataState).length);
       Object.entries(dataState).forEach(([id, playerData]) => {
         // Handling player creation
         if (!gameState[id]) {
@@ -153,6 +190,15 @@ class GameScene extends Phaser.Scene {
                 gameState[id],
                 room,
                 handlePlayerInConferenceRoom,
+                null,
+                null
+              );
+            });
+            muteSpotObjs.forEach((spot) => {
+              this.physics.add.overlap(
+                gameState[id],
+                spot,
+                handlePlayerInMuteSpot,
                 null,
                 null
               );
@@ -213,6 +259,15 @@ class GameScene extends Phaser.Scene {
         conferenceRoom = null;
         removeStreamFromDOM(socket.id);
         demoteAllToAudio();
+      }
+    }
+
+    if (muteSpot) {
+      if (!this.physics.overlap(muteSpot, player)) {
+        // console.log(`Player has left the room`);
+        muteSpot = null;
+        this.events.emit("playerMuted", false);
+        unmuteVoice();
       }
     }
 
@@ -364,7 +419,7 @@ new Phaser.Game({
   physics: {
     default: "arcade",
     arcade: {
-      debug: process.env.NODE_ENV === "development",
+      debug: false, //process.env.NODE_ENV === "development",
       height: 704,
       width: 992,
     },
