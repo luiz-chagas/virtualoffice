@@ -22,7 +22,7 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
     if (user) {
       if (/@crema.us/.test(user.email ?? "")) {
         if (playAudio) {
-          // new Audio("/logon.mp3").play();
+          new Audio("/logon.mp3").play();
         }
         onUserSignedIn(user);
       } else {
