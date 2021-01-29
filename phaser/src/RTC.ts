@@ -141,15 +141,12 @@ const createPeerConnection = async (target: string) => {
 
   connections[target] = connection;
   const stream = await myStream;
-  stream.getTracks().forEach((track) => connection.addTrack(track));
+  stream.getTracks().forEach((track) => connection.addTrack(track, stream));
   connection.ontrack = (data) => {
-    if (data.streams && data.streams[0]) {
-      peerStreams[target] = data.streams[0];
-    } else {
-      const streamObj = peerStreams[target] || new MediaStream();
-      streamObj.addTrack(data.track);
-      peerStreams[target] = streamObj;
-    }
+    const streamObj =
+      peerStreams[target] || data.streams[0] || new MediaStream();
+    streamObj.addTrack(data.track);
+    peerStreams[target] = streamObj;
     addAudioToDOM(target, peerStreams[target]);
   };
   connection.oniceconnectionstatechange = () => {

@@ -112,6 +112,9 @@ class GameScene extends Phaser.Scene {
           .setVisible(false)
           .setPosition(conferenceRooms[index].x, conferenceRooms[index].y);
         this.physics.add.existing(room);
+        const roomBounds = (room as Phaser.GameObjects.Sprite).getBounds();
+        this.add.graphics().lineStyle(1, 0x0e71eb).strokeRectShape(roomBounds);
+
         return room;
       });
 
@@ -128,6 +131,9 @@ class GameScene extends Phaser.Scene {
           .setVisible(false)
           .setPosition(muteSpots[index].x, muteSpots[index].y);
         this.physics.add.existing(spot);
+        const spotBounds = (spot as Phaser.GameObjects.Sprite).getBounds();
+        this.add.graphics().lineStyle(1, 0xe02828).strokeRectShape(spotBounds);
+
         return spot;
       });
 
@@ -163,15 +169,16 @@ class GameScene extends Phaser.Scene {
 
     const handlePlayerInMuteSpot: ArcadePhysicsCallback = (player, spot) => {
       if (muteSpot !== spot) {
-        console.log(`Player is now muted`);
+        // console.log(`Player is now muted`);
         muteVoice();
+        this.events.emit("playerMuted", true);
         muteSpot = spot;
       }
     };
 
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
-      this.events.emit("updatePlayerCount", Object.keys(dataState).length);
+      this.events.emit("playerCount", Object.keys(dataState).length);
       Object.entries(dataState).forEach(([id, playerData]) => {
         // Handling player creation
         if (!gameState[id]) {
@@ -259,6 +266,7 @@ class GameScene extends Phaser.Scene {
       if (!this.physics.overlap(muteSpot, player)) {
         // console.log(`Player has left the room`);
         muteSpot = null;
+        this.events.emit("playerMuted", false);
         unmuteVoice();
       }
     }
@@ -411,7 +419,7 @@ new Phaser.Game({
   physics: {
     default: "arcade",
     arcade: {
-      debug: process.env.NODE_ENV === "development",
+      debug: false, //process.env.NODE_ENV === "development",
       height: 704,
       width: 992,
     },
