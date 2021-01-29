@@ -30,5 +30,12 @@ export const LandingPage: FunctionComponent<Props> = ({ onJoin }) => {
 
 const makeName = (name: string) => {
   const names = name.split(" ");
-  return names[0] + ` ${names[1].charAt(0).concat(".")}`;
+  const first = names[0];
+  const second = getInitial(names[1]);
+  return `${first} ${second}`.trim();
+};
+
+const getInitial = (name: string) => {
+  if (name.length === 0) return "";
+  return name.charAt(0).toUpperCase().concat(".");
 };
