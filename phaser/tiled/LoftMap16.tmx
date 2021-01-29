@@ -17626,11 +17626,11 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="8" name="Conference Rooms">
+ <objectgroup id="8" name="Conference Rooms" locked="1">
   <object id="8" name="Carlos" type="ConferenceRoom" x="16" y="528" width="143.871" height="158"/>
   <object id="9" name="Carli" type="ConferenceRoom" x="16" y="48" width="143.871" height="207"/>
   <object id="11" name="Carlyle" type="ConferenceRoom" x="655.777" y="494.5" width="318.723" height="129"/>
-  <object id="12" name="Kitchen" type="ConferenceRoom" x="625.075" y="48.9085" width="348.324" height="397.232"/>
+  <object id="12" name="Kitchen" type="ConferenceRoom" x="623.927" y="48.9085" width="349.472" height="397.232"/>
  </objectgroup>
  <objectgroup id="9" name="Mute Areas" locked="1">
   <object id="13" type="MuteSpot" x="144.451" y="304.756" width="32" height="32"/>

@@ -117,7 +117,7 @@
                  "rotation":0,
                  "type":"ConferenceRoom",
                  "visible":true,
-                 "width":143.87092328893,
+                 "width":143.871,
                  "x":16,
                  "y":528
                 }, 
@@ -128,7 +128,7 @@
                  "rotation":0,
                  "type":"ConferenceRoom",
                  "visible":true,
-                 "width":143.87092328893,
+                 "width":143.871,
                  "x":16,
                  "y":48
                 }, 
@@ -139,8 +139,8 @@
                  "rotation":0,
                  "type":"ConferenceRoom",
                  "visible":true,
-                 "width":318.722553973358,
-                 "x":655.777446026642,
+                 "width":318.723,
+                 "x":655.777,
                  "y":494.5
                 }, 
                 {
@@ -150,8 +150,8 @@
                  "rotation":0,
                  "type":"ConferenceRoom",
                  "visible":true,
-                 "width":348.324,
-                 "x":625.075,
+                 "width":349.472369315572,
+                 "x":623.926630684428,
                  "y":48.9085
                 }],
          "opacity":1,
@@ -265,7 +265,7 @@
                  "y":48.4157
                 }, 
                 {
-                 "height":45.6200194304088,
+                 "height":45.62,
                  "id":22,
                  "name":"",
                  "rotation":0,
@@ -276,7 +276,7 @@
                  "y":49.1235
                 }, 
                 {
-                 "height":32.6441988975655,
+                 "height":32.6442,
                  "id":23,
                  "name":"",
                  "rotation":0,
@@ -284,7 +284,7 @@
                  "visible":true,
                  "width":176.404,
                  "x":432.078,
-                 "y":238.186801102435
+                 "y":238.187
                 }],
          "opacity":1,
          "type":"objectgroup",

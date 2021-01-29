@@ -31,7 +31,7 @@ export class HUDScene extends Phaser.Scene {
         color: "red",
         fontFamily: "Courier New",
         fontStyle: "bold",
-        fontSize: "92px",
+        fontSize: "80px",
         backgroundColor: "white",
         padding: {
           x: 10,
@@ -39,6 +39,7 @@ export class HUDScene extends Phaser.Scene {
         },
         resolution: 2,
       })
+      .setAlpha(0.5)
       .setOrigin(0.5)
       .setShadow(3, 3, "rgba(0,0,0,0.5)", 2)
       .setVisible(false);
