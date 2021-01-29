@@ -1,8 +1,12 @@
+import { config } from "dotenv";
 import http from "http";
 import io from "socket.io";
 import { app } from "./express";
 import { makePlayersService } from "./services/players";
 import { makeSignalingService } from "./services/signaling";
+import { makeSlackService } from "./services/slack";
+
+config();
 
 const port = Number(process.env.PORT) || 8080;
 app.set("port", port);
@@ -12,8 +16,9 @@ const socketServer = new io.Server(server, {
   transports: ["websocket"],
 });
 
-makePlayersService(socketServer);
+const playerEvents = makePlayersService(socketServer);
 makeSignalingService(socketServer);
+makeSlackService(playerEvents);
 
 const onError = (error: any) => {
   if (error.syscall !== "listen") {
