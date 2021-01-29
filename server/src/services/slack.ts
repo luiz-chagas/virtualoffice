@@ -24,18 +24,37 @@ const postMessageOnChannel = (web: WebClient) => async (name: string) => {
 
     if (!channel) return;
 
-    const slackMessage = `${name} is all alone in the Virtual Office. Come hang with them!`;
-
     sendMessage(web)({
       channel: channel.id,
-      text: slackMessage,
+      text: "",
+      blocks: makeMessage(name),
     });
   } catch (err) {
     console.error(err);
   }
 };
 
-export const listChannels = (slack: WebClient) =>
+const makeMessage = (name: string) => {
+  return [
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `${name} is all alone in the Virtual Office. Come hang with them!`,
+      },
+      accessory: {
+        type: "button",
+        text: {
+          type: "plain_text",
+          text: "Join Office",
+        },
+        url: "http://cremaoffice.fun",
+      },
+    },
+  ];
+};
+
+const listChannels = (slack: WebClient) =>
   slack.conversations
     .list({
       limit: 1000,
@@ -53,9 +72,7 @@ export const listChannels = (slack: WebClient) =>
       return null;
     });
 
-export const sendMessage = (slack: WebClient) => (
-  args: ChatPostMessageArguments
-) =>
+const sendMessage = (slack: WebClient) => (args: ChatPostMessageArguments) =>
   slack.chat
     .postMessage(args)
     .then((res) => res as PostChatResponse)
@@ -64,7 +81,7 @@ export const sendMessage = (slack: WebClient) => (
       return null;
     });
 
-export interface ListChannelResponse extends WebAPICallResult {
+interface ListChannelResponse extends WebAPICallResult {
   channels: Channel[];
 }
 
@@ -84,13 +101,13 @@ type Message = {
   ts: string;
 };
 
-export interface PostChatResponse extends WebAPICallResult {
+interface PostChatResponse extends WebAPICallResult {
   message: Message;
   ts: string;
   channel: string;
 }
 
-export type Channel = {
+type Channel = {
   id: string;
   name: string;
   is_channel: boolean;
