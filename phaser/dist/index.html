@@ -10,11 +10,13 @@
     <script src="game.js"></script>
     <style>
       .user-video {
+        width: 200px;
+        max-width: 50%;
+        height: auto;
         display: flex;
-        width: 20%;
-        height: 100%;
         flex-grow: 1;
       }
+
       .translucent {
         opacity: 0.5;
       }
@@ -25,10 +27,13 @@
       id="videos"
       style="
         position: absolute;
-        display: flex;
         width: 100%;
         height: 100%;
-        flex-wrap: wrap;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-evenly;
+        align-items: center;
+        align-content: space-evenly;
       "
     ></div>
     <div id="audios"></div>
