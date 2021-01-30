@@ -419,10 +419,14 @@ new Phaser.Game({
   physics: {
     default: "arcade",
     arcade: {
-      debug: false, //process.env.NODE_ENV === "development",
+      debug: process.env.NODE_ENV === "development",
       height: 704,
       width: 992,
     },
+  },
+  fps: {
+    target: 30,
+    forceSetTimeOut: true,
   },
 });
 

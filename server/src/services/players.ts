@@ -61,7 +61,7 @@ export const makePlayersService = (socketServer: Server) => {
     });
   });
 
-  setInterval(updateGameState, 33);
+  setInterval(updateGameState, 50);
 
   return events;
 };
