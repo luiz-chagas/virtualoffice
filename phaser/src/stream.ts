@@ -1,17 +1,22 @@
-export const getUserStream = () =>
-  navigator.mediaDevices.getUserMedia({
-    audio: {
-      autoGainControl: true,
-      echoCancellation: true,
-      noiseSuppression: true,
-    },
-    video: {
-      aspectRatio: 1.777777778,
-      frameRate: 20,
-      width: 480,
-      height: 272,
-    },
-  });
+let userStream: MediaStream | null;
+export const getUserStream = async () => {
+  if (!userStream) {
+    userStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        autoGainControl: true,
+        echoCancellation: true,
+        noiseSuppression: true,
+      },
+      video: {
+        aspectRatio: 1.777777778,
+        frameRate: 20,
+        width: 480,
+        height: 272,
+      },
+    });
+  }
+  return userStream;
+};
 
 const setAudioEnabled = async (isEnabled: boolean) => {
   const stream = await getUserStream();

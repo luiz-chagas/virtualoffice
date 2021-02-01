@@ -186,7 +186,7 @@ class GameScene extends Phaser.Scene {
                 gameState[id],
                 room,
                 handlePlayerInConferenceRoom,
-                null,
+                undefined,
                 null
               );
             });
@@ -195,7 +195,7 @@ class GameScene extends Phaser.Scene {
                 gameState[id],
                 spot,
                 handlePlayerInMuteSpot,
-                null,
+                undefined,
                 null
               );
             });
@@ -272,9 +272,9 @@ class GameScene extends Phaser.Scene {
 
     // IF player is moving, change videos opacity
     if (body.velocity.x !== 0 || body.velocity.y !== 0) {
-      document.getElementById("videos").className = "translucent";
+      document.getElementById("videos")!.className = "translucent";
     } else {
-      document.getElementById("videos").className = "";
+      document.getElementById("videos")!.className = "";
     }
 
     // Update the animation last and give left/right animations precedence over up/down animations

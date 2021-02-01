@@ -21,7 +21,7 @@ export const addVideoToDOM = (userId: string, stream: MediaStream) => {
   mediaElement.autoplay = true;
   mediaElement.className = "user-video";
   nodes[userId] = mediaElement;
-  videoContainer.appendChild(mediaElement);
+  videoContainer!.appendChild(mediaElement);
 };
 
 export const addAudioToDOM = (userId: string, stream: MediaStream) => {
@@ -38,7 +38,7 @@ export const addAudioToDOM = (userId: string, stream: MediaStream) => {
   mediaElement.srcObject = stream;
   mediaElement.autoplay = true;
   nodes[userId] = mediaElement;
-  audioContainer.appendChild(mediaElement);
+  audioContainer!.appendChild(mediaElement);
 };
 
 export const makeAllAudio = () => {
@@ -65,7 +65,7 @@ export const addSelfVideoToDom = async (userId: string) => {
   mediaElement.muted = true;
   mediaElement.className = "user-video";
   nodes[userId] = mediaElement;
-  videoContainer.appendChild(mediaElement);
+  videoContainer!.appendChild(mediaElement);
 };
 
 export const turnAudioIntoVideo = (id: string) => {

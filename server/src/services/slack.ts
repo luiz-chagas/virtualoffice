@@ -4,6 +4,7 @@ import {
   WebAPICallResult,
 } from "@slack/web-api";
 import { EventEmitter } from "events";
+import { ifElse, prop, propEq } from "ramda";
 
 export const makeSlackService = (events: EventEmitter) => {
   const token = process.env.SLACK_TOKEN;
@@ -14,7 +15,11 @@ export const makeSlackService = (events: EventEmitter) => {
 
 const postMessageOnChannel = (web: WebClient) => async (name: string) => {
   try {
-    const targetChannel = process.env.CHANNEL;
+    const targetChannel = ifElse(
+      propEq("NODE_ENV", "production"),
+      prop("CHANNEL"),
+      prop("TEST_CHANNEL")
+    )(process.env);
 
     const channels = await listChannels(web);
 
