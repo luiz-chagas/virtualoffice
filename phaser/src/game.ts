@@ -2,21 +2,21 @@ import Phaser from "phaser";
 import { HUDScene } from "./HUD";
 import { connectToServer, spawn } from "./socket";
 import { PlayerData } from "./types/PlayerData";
-import {
-  setupHandlers,
-  removeStreamFromDOM,
-  addSelfVideoToDom,
-  demoteAllToAudio,
-  demoteToAudio,
-  promoteToVideo,
-  changeVolume,
-  muteVoice,
-  unmuteVoice,
-} from "./RTC";
+import { setupHandlers } from "./RTC";
 import { LocalPlayer, RemotePlayer } from "./models/player";
-import { DIR_FRAMES, PLAYER_SPEED } from "./utils/contants";
+import { DIR_FRAMES } from "./utils/contants";
+import { muteVoice, unmuteVoice } from "./stream";
+import { registerAnimations } from "./animations";
+import { getDistanceBetweenPoints } from "./utils/getDistanceBetweenPoints";
+import {
+  addSelfVideoToDom,
+  changeVolume,
+  makeAllAudio,
+  removeFromDOM,
+  turnAudioIntoVideo,
+  turnVideoIntoAudio,
+} from "./DOM";
 
-let input: KeyboardInput;
 let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
 let lastPos = { x: 0, y: 0, facing: "south" };
@@ -152,10 +152,6 @@ class GameScene extends Phaser.Scene {
         this.physics.world.bounds.height
       );
 
-    input = this.input.keyboard.addKeys(
-      "W,A,S,D,UP,DOWN,LEFT,RIGHT"
-    ) as KeyboardInput;
-
     const handlePlayerInConferenceRoom: ArcadePhysicsCallback = (
       player,
       room
@@ -218,14 +214,14 @@ class GameScene extends Phaser.Scene {
             if (playerData.room || conferenceRoom) {
               if (playerData.room === conferenceRoom?.name) {
                 changeVolume(id, 1);
-                promoteToVideo(id);
+                turnAudioIntoVideo(id);
               } else {
                 changeVolume(id, 0);
-                demoteToAudio(id);
+                turnVideoIntoAudio(id);
               }
             } else {
               if (gameState[socket.id]) {
-                const dist = getDistanceBetweenPlayers(
+                const dist = getDistanceBetweenPoints(
                   gameState[socket.id],
                   playerData
                 );
@@ -246,8 +242,11 @@ class GameScene extends Phaser.Scene {
   }
 
   update(time: number) {
+    Object.values(gameState).forEach((sprite) => sprite.update());
+
     const player = gameState[socket.id];
     const myData = serverStateData[socket.id];
+    const body = player?.body;
 
     if (!player) {
       return;
@@ -257,8 +256,8 @@ class GameScene extends Phaser.Scene {
       if (!this.physics.overlap(conferenceRoom, player)) {
         // console.log(`Player has left the room`);
         conferenceRoom = null;
-        removeStreamFromDOM(socket.id);
-        demoteAllToAudio();
+        removeFromDOM(socket.id);
+        makeAllAudio();
       }
     }
 
@@ -271,28 +270,6 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    const body = player.body as Phaser.Physics.Arcade.Body;
-
-    // Stop any previous movement from the last frame
-    body.setVelocity(0);
-
-    // Horizontal movement
-    if (input.LEFT.isDown || input.A.isDown) {
-      body.setVelocityX(-PLAYER_SPEED);
-    } else if (input.RIGHT.isDown || input.D.isDown) {
-      body.setVelocityX(PLAYER_SPEED);
-    }
-
-    // Vertical movement
-    if (input.UP.isDown || input.W.isDown) {
-      body.setVelocityY(-PLAYER_SPEED);
-    } else if (input.DOWN.isDown || input.S.isDown) {
-      body.setVelocityY(PLAYER_SPEED);
-    }
-
-    // Normalize and scale the velocity so that player can't move faster along a diagonal
-    body.velocity.normalize().scale(PLAYER_SPEED);
-
     // IF player is moving, change videos opacity
     if (body.velocity.x !== 0 || body.velocity.y !== 0) {
       document.getElementById("videos").className = "translucent";
@@ -301,24 +278,17 @@ class GameScene extends Phaser.Scene {
     }
 
     // Update the animation last and give left/right animations precedence over up/down animations
-    if (input.LEFT.isDown || input.A.isDown) {
+    if (body.velocity.x < 0) {
       facing = "west";
-      player.anims.play(`${myData.avatar}-left-walk`, true);
-    } else if (input.RIGHT.isDown || input.D.isDown) {
+    } else if (body.velocity.x > 0) {
       facing = "east";
-      player.anims.play(`${myData.avatar}-right-walk`, true);
-    } else if (input.UP.isDown || input.W.isDown) {
+    } else if (body.velocity.y < 0) {
       facing = "north";
-      player.anims.play(`${myData.avatar}-back-walk`, true);
-    } else if (input.DOWN.isDown || input.S.isDown) {
+    } else if (body.velocity.y > 0) {
       facing = "south";
-      player.anims.play(`${myData.avatar}-front-walk`, true);
     } else {
-      player.anims.stop();
       player.setTexture(myData.avatar, DIR_FRAMES[facing]);
     }
-
-    Object.values(gameState).forEach((sprite) => sprite.update());
 
     if (time > lastUpdate + 33) {
       lastUpdate = time;
@@ -344,63 +314,12 @@ class GameScene extends Phaser.Scene {
       toDelete.forEach((id) => {
         gameState[id].getData("name").setVisible(false);
         gameState[id].destroy();
-        removeStreamFromDOM(id);
+        removeFromDOM(id);
         delete gameState[id];
       });
     }
   }
 }
-
-const registerAnimations = (
-  name: string,
-  manager: Phaser.Animations.AnimationManager
-) => {
-  manager.create({
-    key: `${name}-left-walk`,
-    frames: manager.generateFrameNames(name, {
-      start: 4,
-      end: 7,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-  manager.create({
-    key: `${name}-right-walk`,
-    frames: manager.generateFrameNames(name, {
-      start: 8,
-      end: 11,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-  manager.create({
-    key: `${name}-front-walk`,
-    frames: manager.generateFrameNames(name, {
-      start: 0,
-      end: 3,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-  manager.create({
-    key: `${name}-back-walk`,
-    frames: manager.generateFrameNames(name, {
-      start: 12,
-      end: 15,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-};
-
-interface WithXAndY {
-  x: number;
-  y: number;
-}
-const getDistanceBetweenPlayers = (player1: WithXAndY, player2: WithXAndY) =>
-  Math.sqrt(
-    Math.pow(player1.x - player2.x, 2) + Math.pow(player1.y - player2.y, 2)
-  );
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -422,6 +341,7 @@ new Phaser.Game({
       debug: process.env.NODE_ENV === "development",
       height: 704,
       width: 992,
+      fixedStep: false,
     },
   },
   fps: {
@@ -429,14 +349,3 @@ new Phaser.Game({
     forceSetTimeOut: true,
   },
 });
-
-interface KeyboardInput {
-  W: Phaser.Input.Keyboard.Key;
-  A: Phaser.Input.Keyboard.Key;
-  S: Phaser.Input.Keyboard.Key;
-  D: Phaser.Input.Keyboard.Key;
-  UP: Phaser.Input.Keyboard.Key;
-  DOWN: Phaser.Input.Keyboard.Key;
-  LEFT: Phaser.Input.Keyboard.Key;
-  RIGHT: Phaser.Input.Keyboard.Key;
-}

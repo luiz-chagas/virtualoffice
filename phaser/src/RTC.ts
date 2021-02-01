@@ -1,7 +1,9 @@
+import { addAudioToDOM, removeFromDOM } from "./DOM";
+import { getUserStream } from "./stream";
+
 const connections: Record<string, RTCPeerConnection> = {};
 const streams: Record<string, HTMLAudioElement | HTMLVideoElement> = {};
 const peerStreams: Record<string, MediaStream> = {};
-let myStream: Promise<MediaStream>;
 
 export const setupHandlers = (socket: SocketIOClient.Socket) => {
   const makeOffer = async (target: string) => {
@@ -84,46 +86,30 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
     };
   };
 
-  const handleIceCandidate = ({
-    name,
-    candidate,
-  }: {
-    name: string;
-    candidate: RTCIceCandidate;
-  }) => {
-    connections[name]?.addIceCandidate(new RTCIceCandidate(candidate));
-  };
-
-  const handleHangUp = ({ userId }: { userId: string }) => {
-    removeStreamFromDOM(userId);
-  };
-
-  const handleAnswer = ({ name, sdp }: AnswerPayload) => {
-    connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
-  };
-
-  myStream = navigator.mediaDevices.getUserMedia({
-    audio: {
-      autoGainControl: true,
-      echoCancellation: true,
-      noiseSuppression: true,
-    },
-    video: {
-      aspectRatio: {
-        ideal: 1.777777778,
-      },
-      frameRate: {
-        max: 30,
-      },
-    },
-  });
-
   socket.on("audio-offer", handleOffer);
   socket.on("audio-answer", handleAnswer);
   socket.on("new-ice-candidate", handleIceCandidate);
   socket.on("hang-up", handleHangUp);
 
   return { connectToRTC: makeOffer };
+};
+
+const handleIceCandidate = ({
+  name,
+  candidate,
+}: {
+  name: string;
+  candidate: RTCIceCandidate;
+}) => {
+  connections[name]?.addIceCandidate(new RTCIceCandidate(candidate));
+};
+
+const handleHangUp = ({ userId }: { userId: string }) => {
+  removeFromDOM(userId);
+};
+
+const handleAnswer = ({ name, sdp }: AnswerPayload) => {
+  connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
 };
 
 const createPeerConnection = async (target: string) => {
@@ -140,8 +126,9 @@ const createPeerConnection = async (target: string) => {
   });
 
   connections[target] = connection;
-  const stream = await myStream;
+  const stream = await getUserStream();
   stream.getTracks().forEach((track) => connection.addTrack(track, stream));
+
   connection.ontrack = (data) => {
     const streamObj =
       peerStreams[target] || data.streams[0] || new MediaStream();
@@ -149,96 +136,15 @@ const createPeerConnection = async (target: string) => {
     peerStreams[target] = streamObj;
     addAudioToDOM(target, peerStreams[target]);
   };
+
   connection.oniceconnectionstatechange = () => {
     if (["closed", "failed"].includes(connection.iceConnectionState)) {
-      removeStreamFromDOM(target);
+      removeFromDOM(target);
     }
   };
+
   return connection;
 };
-
-export const changeVolume = (player: string, volume: number) => {
-  if (streams[player]) {
-    streams[player].volume = volume;
-  }
-};
-
-const addAudioToDOM = (userId: string, stream: MediaStream) => {
-  removeStreamFromDOM(userId);
-  const audioContainer = document.getElementById("audios");
-  const mediaElement = document.createElement("audio");
-  audioContainer.appendChild(mediaElement);
-  mediaElement.volume = 1;
-  mediaElement.id = userId;
-  mediaElement.srcObject = stream;
-  mediaElement.autoplay = true;
-  streams[userId] = mediaElement;
-};
-
-const addVideoToDOM = (userId: string, stream: MediaStream) => {
-  removeStreamFromDOM(userId);
-  const videoContainer = document.getElementById("videos");
-  const mediaElement = document.createElement("video");
-  videoContainer.appendChild(mediaElement);
-  mediaElement.id = userId;
-  mediaElement.srcObject = stream;
-  mediaElement.autoplay = true;
-  mediaElement.className = "user-video";
-  streams[userId] = mediaElement;
-};
-
-export const promoteToVideo = (userId: string) => {
-  if (streams[userId]?.tagName === "VIDEO") {
-    return;
-  }
-  addVideoToDOM(userId, peerStreams[userId]);
-};
-
-export const demoteToAudio = (userId: string) => {
-  if (streams[userId]?.tagName === "AUDIO") {
-    return;
-  }
-  addAudioToDOM(userId, peerStreams[userId]);
-};
-
-export const demoteAllToAudio = () => {
-  document.querySelectorAll("video").forEach((videoEl) => {
-    addAudioToDOM(videoEl.id, peerStreams[videoEl.id]);
-  });
-};
-
-export const addSelfVideoToDom = (userId: string) => {
-  removeStreamFromDOM(userId);
-  const videoContainer = document.getElementById("videos");
-  const mediaElement = document.createElement("video");
-  videoContainer.appendChild(mediaElement);
-  mediaElement.id = userId;
-  myStream.then((stream) => {
-    mediaElement.srcObject = stream;
-  });
-  mediaElement.autoplay = true;
-  mediaElement.volume = 0;
-  mediaElement.muted = true;
-  mediaElement.className = "user-video";
-  streams[userId] = mediaElement;
-};
-
-export const removeStreamFromDOM = (userId: string) => {
-  document
-    .querySelectorAll(`[id="${userId}"]`)
-    .forEach((element) => element.remove());
-};
-
-const toggleMute = (isMuted: boolean) => {
-  myStream.then((stream) => {
-    stream.getAudioTracks().forEach((track) => {
-      track.enabled = !isMuted;
-    });
-  });
-};
-
-export const muteVoice = () => toggleMute(true);
-export const unmuteVoice = () => toggleMute(false);
 
 interface NegotiationPayload {
   name: string;
