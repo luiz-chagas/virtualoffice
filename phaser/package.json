@@ -1,5 +1,5 @@
 {
-  "name": "poc-office",
+  "name": "virtual-office-phaser",
   "version": "1.0.0",
   "description": "",
   "main": "src/game.ts",
@@ -7,16 +7,8 @@
     "start": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --watch --config rollup.config.dev.js",
     "build": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup --config rollup.config.dist.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/luizjr92/poc-office.git"
-  },
   "author": "Luiz Chagas",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/luizjr92/poc-office/issues"
-  },
-  "homepage": "https://github.com/luizjr92/poc-office#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.1",
