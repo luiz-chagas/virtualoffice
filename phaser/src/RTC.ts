@@ -2,7 +2,6 @@ import { addAudioToDOM, removeFromDOM } from "./DOM";
 import { getUserStream } from "./stream";
 
 const connections: Record<string, RTCPeerConnection> = {};
-const streams: Record<string, HTMLAudioElement | HTMLVideoElement> = {};
 const peerStreams: Record<string, MediaStream> = {};
 
 export const setupHandlers = (socket: SocketIOClient.Socket) => {
@@ -11,7 +10,7 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
       return;
     }
 
-    const myPeerConnection = await createPeerConnection(target);
+    const myPeerConnection = createPeerConnection(target);
 
     myPeerConnection.onnegotiationneeded = async () => {
       const offer = await myPeerConnection.createOffer();
@@ -39,7 +38,7 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
   };
 
   const handleOffer = async ({ name, target, sdp }: OfferPayload) => {
-    const myPeerConnection = await createPeerConnection(name);
+    const myPeerConnection = createPeerConnection(name);
     const desc = new RTCSessionDescription(sdp);
     if (myPeerConnection.signalingState !== "stable") {
       // Set the local and remove descriptions for rollback; don't proceed
@@ -112,7 +111,7 @@ const handleAnswer = ({ name, sdp }: AnswerPayload) => {
   connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
 };
 
-const createPeerConnection = async (target: string) => {
+const createPeerConnection = (target: string) => {
   if (connections[target]) {
     return connections[target];
   }
@@ -126,8 +125,6 @@ const createPeerConnection = async (target: string) => {
   });
 
   connections[target] = connection;
-  const stream = await getUserStream();
-  stream.getTracks().forEach((track) => connection.addTrack(track, stream));
 
   connection.ontrack = (data) => {
     const streamObj =
@@ -142,6 +139,10 @@ const createPeerConnection = async (target: string) => {
       removeFromDOM(target);
     }
   };
+
+  getUserStream().then((stream) => {
+    stream.getTracks().forEach((track) => connection.addTrack(track, stream));
+  });
 
   return connection;
 };
