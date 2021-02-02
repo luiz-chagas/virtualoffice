@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { EventEmitter } from "events";
+import { log } from "./logger";
 
 interface Player {
   id: string;
@@ -34,6 +35,7 @@ export const makePlayersService = (socketServer: Server) => {
 
   socketServer.on("connection", (socket) => {
     socket.on("disconnect", () => {
+      log(`${players[socket.id]?.name} has disconnected`);
       removePlayer(socket.id);
     });
 
@@ -55,6 +57,7 @@ export const makePlayersService = (socketServer: Server) => {
         facing: "south",
         room: null,
       });
+      log(`${name} has joined`);
       if (Object.keys(players).length === 1) {
         events.emit("firstPlayerJoined", name);
       }

@@ -2,6 +2,7 @@ import { config } from "dotenv";
 import http from "http";
 import io from "socket.io";
 import { app } from "./express";
+import { log } from "./services/logger";
 import { makePlayersService } from "./services/players";
 import { makeSignalingService } from "./services/signaling";
 import { makeSlackService } from "./services/slack";
@@ -42,7 +43,7 @@ const onError = (error: any) => {
 const onListening = () => {
   const addr = server.address();
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr?.port;
-  console.log("Server started on " + bind);
+  log("Server started on " + bind);
 };
 
 server.listen(port);

@@ -5,6 +5,7 @@ import {
 } from "@slack/web-api";
 import { EventEmitter } from "events";
 import { ifElse, prop, propEq } from "ramda";
+import { log } from "./logger";
 
 export const makeSlackService = (events: EventEmitter) => {
   const token = process.env.SLACK_TOKEN;
@@ -22,12 +23,11 @@ const postMessageOnChannel = (web: WebClient) => async (name: string) => {
     )(process.env);
 
     const channels = await listChannels(web);
-
-    if (!channels) return;
-
     const channel = channels.find((channel) => channel.name === targetChannel);
 
-    if (!channel) return;
+    if (!channel) {
+      throw Error(`Failed to find channel ${targetChannel}`);
+    }
 
     sendMessage(web)({
       channel: channel.id,
@@ -35,7 +35,7 @@ const postMessageOnChannel = (web: WebClient) => async (name: string) => {
       blocks: makeMessage(name),
     });
   } catch (err) {
-    console.error(err);
+    log(err.message ?? err);
   }
 };
 
@@ -71,45 +71,13 @@ const listChannels = (slack: WebClient) =>
         throw Error("Failed to list channels");
       }
       return response.channels;
-    })
-    .catch((err: Error) => {
-      console.error(err);
-      return null;
     });
 
 const sendMessage = (slack: WebClient) => (args: ChatPostMessageArguments) =>
-  slack.chat
-    .postMessage(args)
-    .then((res) => res as PostChatResponse)
-    .catch((err: Error) => {
-      console.error(err);
-      return null;
-    });
+  slack.chat.postMessage(args);
 
 interface ListChannelResponse extends WebAPICallResult {
   channels: Channel[];
-}
-
-type Attachment = {
-  text: string;
-  id: number;
-  fallback: string;
-};
-
-type Message = {
-  text: string;
-  username: string;
-  bot_id: string;
-  attachments: Attachment[];
-  type: "message";
-  subtype: "bot_message";
-  ts: string;
-};
-
-interface PostChatResponse extends WebAPICallResult {
-  message: Message;
-  ts: string;
-  channel: string;
 }
 
 type Channel = {
