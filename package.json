@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/luizjr92/poc-office.git"
+    "url": "git+https://github.com/luizjr92/virtualoffice.git"
   },
   "author": "Luiz Chagas",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/luizjr92/poc-office/issues"
+    "url": "https://github.com/luizjr92/virtualoffice/issues"
   },
-  "homepage": "https://github.com/luizjr92/poc-office#readme"
+  "homepage": "https://github.com/luizjr92/virtualoffice#readme"
 }
