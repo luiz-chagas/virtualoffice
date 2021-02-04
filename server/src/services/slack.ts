@@ -13,7 +13,7 @@ export const makeSlackService = (events: EventEmitter) => {
   const web = new WebClient(token);
   const router = express.Router();
 
-  router.get("/players", async (req, res) => {
+  router.post("/", async (req, res) => {
     const { text } = req.body;
     if (text !== "list") {
       return res.json({
