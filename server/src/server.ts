@@ -1,13 +1,16 @@
 import { config } from "dotenv";
 import http from "http";
 import io from "socket.io";
-import { app } from "./express";
+import { makeApp } from "./express";
 import { log } from "./services/logger";
 import { makePlayersService } from "./services/players";
 import { makeSignalingService } from "./services/signaling";
 import { makeSlackService } from "./services/slack";
+import { router } from "./routes";
 
 config();
+
+const { app, registerRouter } = makeApp();
 
 const port = Number(process.env.PORT) || 8080;
 app.set("port", port);
@@ -19,7 +22,10 @@ const socketServer = new io.Server(server, {
 
 const playerEvents = makePlayersService(socketServer);
 makeSignalingService(socketServer);
-makeSlackService(playerEvents);
+const { router: slackRouter } = makeSlackService(playerEvents);
+
+registerRouter("/slack", slackRouter);
+registerRouter("/api", router);
 
 const onError = (error: any) => {
   if (error.syscall !== "listen") {

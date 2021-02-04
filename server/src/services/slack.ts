@@ -6,13 +6,48 @@ import {
 import { EventEmitter } from "events";
 import { propOr } from "ramda";
 import { log } from "./logger";
+import express from "express";
 
 export const makeSlackService = (events: EventEmitter) => {
   const token = process.env.SLACK_TOKEN;
   const web = new WebClient(token);
+  const router = express.Router();
+
+  router.get("/players", async (req, res) => {
+    const { text } = req.body;
+    if (text !== "list") {
+      return res.json({
+        response_type: "ephemeral",
+        text: "Command not found. Supported commands: `list`",
+      });
+    }
+
+    const players = await listPlayers(events);
+    res.status(200).json({
+      response_type: "ephemeral",
+      text:
+        Object.entries(players)
+          .map(([room, names]) => `${room}: ${names.join(", ")}`)
+          .join("\n") || "The office is currentl empty.",
+    });
+  });
+
+  router.get("/", (req, res) => {
+    res.status(200).send("Hello Slack");
+  });
 
   events.on("firstPlayerJoined", postMessageOnChannel(web));
+
+  return { router };
 };
+
+const listPlayers = (events: EventEmitter) =>
+  new Promise<Record<string, string[]>>((resolve, reject) => {
+    events.once("listPlayersRes", (players) => {
+      return resolve(players);
+    });
+    events.emit("listPlayersReq");
+  });
 
 const postMessageOnChannel = (web: WebClient) => async (name: string) => {
   try {

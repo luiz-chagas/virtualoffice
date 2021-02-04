@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { EventEmitter } from "events";
 import { log } from "./logger";
+import { propOr, reduceBy, values } from "ramda";
 
 interface Player {
   id: string;
@@ -32,6 +33,18 @@ export const makePlayersService = (socketServer: Server) => {
   const updateGameState = () => {
     socketServer.emit("stateUpdate", players);
   };
+
+  const listPlayersByRoom = (players: Player[]) => {
+    const getRoom = propOr("Loft", "room");
+    const namesReducer = (acc: string[], player: Player) =>
+      acc.concat(player.name);
+    return reduceBy(namesReducer, [], getRoom, players);
+  };
+
+  events.on("listPlayersReq", () => {
+    const result = listPlayersByRoom(values(players));
+    events.emit("listPlayersRes", result);
+  });
 
   socketServer.on("connection", (socket) => {
     socket.on("disconnect", () => {
