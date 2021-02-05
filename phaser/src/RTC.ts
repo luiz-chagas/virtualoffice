@@ -18,10 +18,10 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
         return;
       }
       await myPeerConnection.setLocalDescription(offer);
-      socket.emit("audio-offer", {
+      socket.emit("rtc-offer", {
         name: socket.id,
         target: target,
-        type: "audio-offer",
+        type: "rtc-offer",
         sdp: myPeerConnection.localDescription,
       });
     };
@@ -53,10 +53,10 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
     }
     const answer = await myPeerConnection.createAnswer();
     await myPeerConnection.setLocalDescription(answer);
-    socket.emit("audio-answer", {
+    socket.emit("rtc-answer", {
       name: target,
       target: name,
-      type: "audio-answer",
+      type: "rtc-answer",
       sdp: myPeerConnection.localDescription,
     });
 
@@ -76,17 +76,17 @@ export const setupHandlers = (socket: SocketIOClient.Socket) => {
         return;
       }
       await myPeerConnection.setLocalDescription(offer);
-      socket.emit("audio-offer", {
+      socket.emit("rtc-offer", {
         name: target,
         target: name,
-        type: "audio-offer",
+        type: "rtc-offer",
         sdp: myPeerConnection.localDescription,
       });
     };
   };
 
-  socket.on("audio-offer", handleOffer);
-  socket.on("audio-answer", handleAnswer);
+  socket.on("rtc-offer", handleOffer);
+  socket.on("rtc-answer", handleAnswer);
   socket.on("new-ice-candidate", handleIceCandidate);
   socket.on("hang-up", handleHangUp);
 
@@ -154,9 +154,9 @@ interface NegotiationPayload {
 }
 
 interface OfferPayload extends NegotiationPayload {
-  type: "audio-offer";
+  type: "rtc-offer";
 }
 
 interface AnswerPayload extends NegotiationPayload {
-  type: "audio-answer";
+  type: "rtc-answer";
 }

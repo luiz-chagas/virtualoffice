@@ -43,8 +43,8 @@ export class HUDScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setShadow(3, 3, "rgba(0,0,0,0.5)", 2)
       .setVisible(false);
-    gameScene.events.on("playerMuted", (x: boolean) => {
-      playerMutedText.setVisible(x);
+    gameScene.events.on("playerMuted", (isMuted: boolean) => {
+      playerMutedText.setVisible(isMuted);
     });
   }
 
