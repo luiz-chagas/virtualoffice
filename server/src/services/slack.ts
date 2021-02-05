@@ -4,7 +4,7 @@ import {
   WebAPICallResult,
 } from "@slack/web-api";
 import { EventEmitter } from "events";
-import { propOr } from "ramda";
+import { or, propOr } from "ramda";
 import { log } from "./logger";
 import express from "express";
 
@@ -25,10 +25,12 @@ export const makeSlackService = (events: EventEmitter) => {
     const players = await listPlayers(events);
     res.status(200).json({
       response_type: "ephemeral",
-      text:
+      text: or(
         Object.entries(players)
           .map(([room, names]) => `${room}: ${names.join(", ")}`)
-          .join("\n") || "The office is currentl empty.",
+          .join("\n"),
+        "The office is currently empty."
+      ),
     });
   });
 
