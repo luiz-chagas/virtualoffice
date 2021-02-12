@@ -26,7 +26,7 @@ export const SettingsApp: FunctionComponent<Props> = ({
   const { signOut, user } = useFirebase();
 
   const [selectedCharacter, setSelectedCharacter] = useState(
-    load("char") ?? "char1"
+    load("char") ?? "player1"
   );
 
   const [playWindowsSound, setPlayWindowsSound] = useState(
@@ -60,41 +60,41 @@ export const SettingsApp: FunctionComponent<Props> = ({
       <div style={{ display: "flex" }}>
         <OptionContainer>
           <RadioButton
-            onClick={() => setSelectedCharacter("char1")}
+            onClick={() => setSelectedCharacter("player1")}
             group="char"
-            id="char1"
+            id="player1"
             label="Character 1"
-            defaultChecked={equals(selectedCharacter, "char1")}
+            defaultChecked={equals(selectedCharacter, "player1")}
           />
           <img src={Char1} style={{ maxWidth: "64px" }} alt="Character 1" />
         </OptionContainer>
         <OptionContainer>
           <RadioButton
-            onClick={() => setSelectedCharacter("char2")}
+            onClick={() => setSelectedCharacter("player2")}
             group="char"
-            id="char2"
+            id="player2"
             label="Character 2"
-            defaultChecked={equals(selectedCharacter, "char2")}
+            defaultChecked={equals(selectedCharacter, "player2")}
           />
           <img src={Char2} style={{ maxWidth: "64px" }} alt="Character 2" />
         </OptionContainer>
         <OptionContainer>
           <RadioButton
-            onClick={() => setSelectedCharacter("char3")}
+            onClick={() => setSelectedCharacter("player3")}
             group="char"
-            id="char3"
+            id="player3"
             label="Character 3"
-            defaultChecked={equals(selectedCharacter, "char3")}
+            defaultChecked={equals(selectedCharacter, "player3")}
           />
           <img src={Char3} style={{ maxWidth: "64px" }} alt="Character 3" />
         </OptionContainer>
         <OptionContainer>
           <RadioButton
-            onClick={() => setSelectedCharacter("char4")}
+            onClick={() => setSelectedCharacter("player4")}
             group="char"
-            id="char4"
+            id="player4"
             label="Character 4"
-            defaultChecked={equals(selectedCharacter, "char4")}
+            defaultChecked={equals(selectedCharacter, "player4")}
           />
           <img src={Char4} style={{ maxWidth: "64px" }} alt="Character 4" />
         </OptionContainer>
