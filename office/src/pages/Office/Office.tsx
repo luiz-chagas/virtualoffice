@@ -22,7 +22,7 @@ export const Office: FunctionComponent<Props> = ({ name }) => {
           border: "none",
         }}
         title="Crema Virtual Office"
-        sandbox="allow-same-origin"
+        sandbox="allow-same-origin allow-scripts"
         src={`/phaser?name=${name}&date=${Date.now()}`}
       />
     </div>
