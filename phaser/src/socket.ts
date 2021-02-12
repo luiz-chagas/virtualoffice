@@ -10,18 +10,22 @@ export const connectToServer = () => {
   return { socket };
 };
 
-export const spawn = (
-  socket: SocketIOClient.Socket,
-  x: number,
-  y: number,
-  avatar: string | null
-) => {
+export const spawn = (socket: SocketIOClient.Socket, x: number, y: number) => {
   const name =
     new URLSearchParams(window.location.search).get("name") || "Anonymous";
   socket.emit("join", {
     name,
     x,
     y,
-    avatar,
+    avatar: load("char"),
   });
+};
+
+const load = (x: string) => {
+  try {
+    const value = JSON.parse(localStorage.getItem(x) ?? "");
+    return value;
+  } catch (err) {
+    return null;
+  }
 };
