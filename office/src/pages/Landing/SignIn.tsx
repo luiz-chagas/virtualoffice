@@ -1,4 +1,4 @@
-import { Dropdown, Window, Typography, Button } from "react-windows-xp";
+import { Window, Typography, Button } from "react-windows-xp";
 import Draggable from "react-draggable";
 import { useFirebase } from "../../hooks/useFirebase";
 import firebase from "firebase/app";
@@ -6,6 +6,7 @@ import { FunctionComponent, useEffect, useRef, useState } from "react";
 import Logo from "./logo.png";
 import Crema from "./crema.png";
 import { pipe } from "ramda";
+import { load, save } from "../../utils/localStorage";
 
 interface Props {
   onUserSignedIn: (user: firebase.User) => void;
@@ -13,13 +14,14 @@ interface Props {
 
 export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
   const [state, setState] = useState<"NORMAL" | "ERROR">("NORMAL");
-  const [playAudio, setPlayAudio] = useState(false);
+  const playAudio = Boolean(load("playSound") ?? "true");
 
   const { user, signIn, signOut } = useFirebase();
   const ref = useRef(null);
 
   useEffect(() => {
     if (user) {
+      save("uid", user.uid);
       if (/@crema.us/.test(user.email ?? "")) {
         if (playAudio) {
           new Audio("/logon.mp3").play();
@@ -32,11 +34,7 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
     }
   }, [onUserSignedIn, user, signOut, playAudio]);
 
-  const handleSignIn = pipe(
-    () => setPlayAudio(true),
-    () => setState("NORMAL"),
-    signIn
-  );
+  const handleSignIn = pipe(() => setState("NORMAL"), signIn);
 
   return (
     <Draggable nodeRef={ref}>
@@ -61,21 +59,6 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
               alt="Crema"
             />
           </div>
-          <div
-            style={{
-              marginTop: 8,
-              marginBottom: 8,
-            }}
-          >
-            <div style={{ display: "inline-block", marginRight: 16 }}>
-              <Typography variant="span" alignment="left">
-                Connect To
-              </Typography>
-            </div>
-            <Dropdown value="crema" onChange={function () {}}>
-              <Dropdown.Option id="crema">Crema Loft</Dropdown.Option>
-            </Dropdown>
-          </div>
           <div style={{ color: "red" }}>
             <Typography variant="span" alignment="left">
               {state === "ERROR"
@@ -87,10 +70,11 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
             style={{
               display: "flex",
               justifyContent: "flex-end",
-              marginBottom: 8,
+              marginTop: "8px",
+              marginBottom: "8px",
             }}
           >
-            <Button onClick={handleSignIn}>Ok</Button>
+            <Button onClick={handleSignIn}>Connect</Button>
           </div>
         </Window>
       </div>

@@ -60,13 +60,13 @@ export const makePlayersService = (socketServer: Server) => {
       updatePlayer(socket.id, playerData);
     });
 
-    socket.on("join", ({ name, x, y }: Player) => {
+    socket.on("join", ({ name, x, y, avatar }: Player) => {
       updatePlayer(socket.id, {
         id: socket.id,
         x,
         y,
         name: name,
-        avatar: getRandomAvatar(),
+        avatar: avatar ?? getRandomAvatar(),
         facing: "south",
         room: null,
       });

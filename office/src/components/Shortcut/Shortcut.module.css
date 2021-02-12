@@ -1,0 +1,8 @@
+.btnShortcut {
+  background: none;
+}
+
+.btnShortcut:focus,
+.btnShortcut:active {
+  background: none !important;
+}

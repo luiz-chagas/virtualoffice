@@ -97,7 +97,13 @@ class GameScene extends Phaser.Scene {
     );
     const playerSpawnPoint =
       spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
-    spawn(socket, (playerSpawnPoint as any).x, (playerSpawnPoint as any).y);
+
+    spawn(
+      socket,
+      (playerSpawnPoint as any).x,
+      (playerSpawnPoint as any).y,
+      localStorage.getItem("char")
+    );
 
     const conferenceRooms = map.filterObjects(
       "Conference Rooms",

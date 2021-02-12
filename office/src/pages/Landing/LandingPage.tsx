@@ -3,10 +3,10 @@ import { pipe, propOr } from "ramda";
 import { SignIn } from "./SignIn";
 
 interface Props {
-  onJoin: (name: string) => void;
+  onSignIn: (name: string) => void;
 }
 
-export const LandingPage: FunctionComponent<Props> = ({ onJoin }) => {
+export const LandingPage: FunctionComponent<Props> = ({ onSignIn: onJoin }) => {
   const handleUserSignedIn = pipe(
     propOr("Anonymous", "displayName"),
     makeName,
