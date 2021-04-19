@@ -1,4 +1,4 @@
-import { andThen, equals, pipe, tap } from "ramda";
+import { equals, pipe } from "ramda";
 import { FunctionComponent, useEffect, useState } from "react";
 import {
   Button,
@@ -46,16 +46,17 @@ export const SettingsApp: FunctionComponent<Props> = ({
   );
 
   return (
-    <Window title="Settings" width="auto" showClose onClose={onClose}>
+    <Window title="Settings" showClose onClose={onClose}>
       <Typography variant="h5">Account</Typography>
       <Button onClick={signOut}>Sign Out</Button>
       <Typography variant="h5">System</Typography>
       <Checkbox
-        label="Play logon sound after signing in"
         id="logon"
         onChange={setPlayWindowsSound}
         checked={playWindowsSound}
-      />
+      >
+        Play logon sound after signing in
+      </Checkbox>
       <Typography variant="h5">Appearance</Typography>
       <div style={{ display: "flex" }}>
         <OptionContainer>

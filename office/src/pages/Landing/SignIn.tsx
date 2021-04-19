@@ -39,7 +39,7 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
   return (
     <Draggable nodeRef={ref}>
       <div ref={ref} style={{ maxWidth: "50%" }}>
-        <Window title="Log On to Crema" showClose width="400px">
+        <Window title="Log On to Crema" showClose style={{ width: "400px" }}>
           <div
             style={{
               backgroundColor: "#1e1b29",
@@ -60,7 +60,7 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
             />
           </div>
           <div style={{ color: "red" }}>
-            <Typography variant="span" alignment="left">
+            <Typography variant="span">
               {state === "ERROR"
                 ? "Unauthorized Email. Please use your Crema email."
                 : ""}

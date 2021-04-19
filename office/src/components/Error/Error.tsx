@@ -8,7 +8,12 @@ interface Props {
 
 export const ErrorAlert: FunctionComponent<Props> = ({ onAccept }) => {
   return (
-    <Window title="Error" width="200px" showClose onClose={onAccept}>
+    <Window
+      title="Error"
+      style={{ width: "200px" }}
+      showClose
+      onClose={onAccept}
+    >
       <div style={{ display: "flex", alignItems: "center" }}>
         <img src={ErrorIcon} style={{ maxWidth: "48px" }} alt="Error" />
         <Typography variant="paragraph">
