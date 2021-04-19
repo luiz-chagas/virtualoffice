@@ -38,7 +38,7 @@ export const makeSlackService = (events: EventEmitter) => {
     res.status(200).send("Hello Slack");
   });
 
-  events.on("firstPlayerJoined", postMessageOnChannel(web));
+  // events.on("firstPlayerJoined", postMessageOnChannel(web));
 
   return { router };
 };

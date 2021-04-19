@@ -9,7 +9,7 @@ const options = {
   second: "numeric",
   hour12: false,
   timeZone: "America/Chicago",
-};
+} as const;
 
 export const log = (message: string) =>
   pipe(
