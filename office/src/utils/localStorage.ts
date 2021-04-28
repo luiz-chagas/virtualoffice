@@ -1,6 +1,6 @@
-type Props = "char" | "playSound" | "uid";
+type Props = "char" | "playSound" | "uid" | "fps";
 
-export const save = (x: Props, data: string | boolean) =>
+export const save = (x: Props, data: string | boolean | number) =>
   localStorage.setItem(x, JSON.stringify(data));
 
 export const load = (x: Props) => {

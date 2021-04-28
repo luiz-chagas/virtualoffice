@@ -6,6 +6,7 @@ import {
   Typography,
   Window,
   Checkbox,
+  Slider,
 } from "react-windows-xp";
 import { useFirebase } from "../../hooks/useFirebase";
 import { load, save } from "../../utils/localStorage";
@@ -33,6 +34,8 @@ export const SettingsApp: FunctionComponent<Props> = ({
     Boolean(load("playSound") ?? "true")
   );
 
+  const [fps, setFps] = useState(Number(load("fps") ?? 15));
+
   useEffect(() => {
     if (!user) {
       onSignOut();
@@ -42,6 +45,7 @@ export const SettingsApp: FunctionComponent<Props> = ({
   const saveSettings = pipe(
     () => save("playSound", playWindowsSound),
     () => save("char", selectedCharacter),
+    () => save("fps", fps),
     onClose
   );
 
@@ -57,6 +61,9 @@ export const SettingsApp: FunctionComponent<Props> = ({
       >
         Play logon sound after signing in
       </Checkbox>
+      <Typography variant="h5">Performance</Typography>
+      <Typography variant="paragraph">Frames per second: {fps}</Typography>
+      <Slider id="performance" min={1} max={60} value={fps} onChange={setFps} />
       <Typography variant="h5">Appearance</Typography>
       <div style={{ display: "flex" }}>
         <OptionContainer>

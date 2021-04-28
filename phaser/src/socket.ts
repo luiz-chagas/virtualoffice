@@ -1,3 +1,5 @@
+import { loadStorage } from "./loadStorage";
+
 export const connectToServer = () => {
   const socket =
     process.env.NODE_ENV === "development"
@@ -17,15 +19,6 @@ export const spawn = (socket: SocketIOClient.Socket, x: number, y: number) => {
     name,
     x,
     y,
-    avatar: load("char"),
+    avatar: loadStorage("char"),
   });
-};
-
-const load = (x: string) => {
-  try {
-    const value = JSON.parse(localStorage.getItem(x) ?? "");
-    return value;
-  } catch (err) {
-    return null;
-  }
 };

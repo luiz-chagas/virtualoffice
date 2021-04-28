@@ -43,14 +43,12 @@ export const System: FunctionComponent<Props> = ({ onJoin, onSignOut }) => {
         </Draggable>
       )}
       {showSettings && (
-        <Draggable>
-          <div style={{ position: "absolute", top: "40%", left: "40%" }}>
-            <SettingsApp
-              onClose={() => setShowSettings(false)}
-              onSignOut={onSignOut}
-            />
-          </div>
-        </Draggable>
+        <div style={{ position: "absolute", top: "30%", left: "40%" }}>
+          <SettingsApp
+            onClose={() => setShowSettings(false)}
+            onSignOut={onSignOut}
+          />
+        </div>
       )}
     </Wallpaper>
   );

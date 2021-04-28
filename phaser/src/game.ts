@@ -16,6 +16,7 @@ import {
   turnAudioIntoVideo,
   turnVideoIntoAudio,
 } from "./DOM";
+import { loadStorage } from "./loadStorage";
 
 let lastUpdate = -Infinity;
 let lastGarbageColleted = -Infinity;
@@ -343,10 +344,11 @@ new Phaser.Game({
       height: 704,
       width: 992,
       fixedStep: false,
+      fps: loadStorage("fps") ?? 30,
     },
   },
   fps: {
-    target: 30,
+    target: loadStorage("fps") ?? 30,
     forceSetTimeOut: true,
   },
 });
