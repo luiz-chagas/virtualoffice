@@ -1,4 +1,4 @@
-import { addAudioToDOM, removeFromDOM } from "./DOM";
+import { addAudioToDOM, addVideoToDOM, removeFromDOM } from "./DOM";
 import { getUserStream } from "./stream";
 
 const connections: Record<string, RTCPeerConnection> = {};
@@ -131,7 +131,8 @@ const createPeerConnection = (target: string) => {
       peerStreams[target] || data.streams[0] || new MediaStream();
     streamObj.addTrack(data.track);
     peerStreams[target] = streamObj;
-    addAudioToDOM(target, peerStreams[target]);
+    // addAudioToDOM(target, peerStreams[target]);
+    addVideoToDOM(target, peerStreams[target]);
   };
 
   connection.oniceconnectionstatechange = () => {

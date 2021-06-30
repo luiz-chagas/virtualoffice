@@ -25,8 +25,8 @@ let facing = "south";
 
 let isFirstServerUpdate = true;
 
-let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
-let muteSpot: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
+// let conferenceRoom: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
+// let muteSpot: Phaser.Types.Physics.Arcade.GameObjectWithBody | null = null;
 
 const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
@@ -101,43 +101,43 @@ class GameScene extends Phaser.Scene {
 
     spawn(socket, (playerSpawnPoint as any).x, (playerSpawnPoint as any).y);
 
-    const conferenceRooms = map.filterObjects(
-      "Conference Rooms",
-      (obj) => obj.type === "ConferenceRoom"
-    );
+    // const conferenceRooms = map.filterObjects(
+    //   "Conference Rooms",
+    //   (obj) => obj.type === "ConferenceRoom"
+    // );
 
-    const conferenceRoomObjs = map
-      .createFromObjects("Conference Rooms", {})
-      .map((room, index) => {
-        (room as Phaser.GameObjects.Sprite)
-          .setOrigin(0, 0)
-          .setVisible(false)
-          .setPosition(conferenceRooms[index].x, conferenceRooms[index].y);
-        this.physics.add.existing(room);
-        const roomBounds = (room as Phaser.GameObjects.Sprite).getBounds();
-        this.add.graphics().lineStyle(1, 0x0e71eb).strokeRectShape(roomBounds);
+    // const conferenceRoomObjs = map
+    //   .createFromObjects("Conference Rooms", {})
+    //   .map((room, index) => {
+    //     (room as Phaser.GameObjects.Sprite)
+    //       .setOrigin(0, 0)
+    //       .setVisible(false)
+    //       .setPosition(conferenceRooms[index].x, conferenceRooms[index].y);
+    //     this.physics.add.existing(room);
+    //     const roomBounds = (room as Phaser.GameObjects.Sprite).getBounds();
+    //     this.add.graphics().lineStyle(1, 0x0e71eb).strokeRectShape(roomBounds);
 
-        return room;
-      });
+    //     return room;
+    //   });
 
-    const muteSpots = map.filterObjects(
-      "Mute Areas",
-      (obj) => obj.type === "MuteSpot"
-    );
+    // const muteSpots = map.filterObjects(
+    //   "Mute Areas",
+    //   (obj) => obj.type === "MuteSpot"
+    // );
 
-    const muteSpotObjs = map
-      .createFromObjects("Mute Areas", {})
-      .map((spot, index) => {
-        (spot as Phaser.GameObjects.Sprite)
-          .setOrigin(0, 0)
-          .setVisible(false)
-          .setPosition(muteSpots[index].x, muteSpots[index].y);
-        this.physics.add.existing(spot);
-        const spotBounds = (spot as Phaser.GameObjects.Sprite).getBounds();
-        this.add.graphics().lineStyle(1, 0xe02828).strokeRectShape(spotBounds);
+    // const muteSpotObjs = map
+    //   .createFromObjects("Mute Areas", {})
+    //   .map((spot, index) => {
+    //     (spot as Phaser.GameObjects.Sprite)
+    //       .setOrigin(0, 0)
+    //       .setVisible(false)
+    //       .setPosition(muteSpots[index].x, muteSpots[index].y);
+    //     this.physics.add.existing(spot);
+    //     const spotBounds = (spot as Phaser.GameObjects.Sprite).getBounds();
+    //     this.add.graphics().lineStyle(1, 0xe02828).strokeRectShape(spotBounds);
 
-        return spot;
-      });
+    //     return spot;
+    //   });
 
     const animationManager = this.anims;
     registerAnimations("player1", animationManager);
@@ -154,25 +154,25 @@ class GameScene extends Phaser.Scene {
         this.physics.world.bounds.height
       );
 
-    const handlePlayerInConferenceRoom: ArcadePhysicsCallback = (
-      player,
-      room
-    ) => {
-      if (conferenceRoom !== room) {
-        // console.log(`Player has joined ${room.name}`);
-        conferenceRoom = room;
-        addSelfVideoToDom(socket.id);
-      }
-    };
+    // const handlePlayerInConferenceRoom: ArcadePhysicsCallback = (
+    //   player,
+    //   room
+    // ) => {
+    //   if (conferenceRoom !== room) {
+    //     // console.log(`Player has joined ${room.name}`);
+    //     conferenceRoom = room;
+    //     addSelfVideoToDom(socket.id);
+    //   }
+    // };
 
-    const handlePlayerInMuteSpot: ArcadePhysicsCallback = (player, spot) => {
-      if (muteSpot !== spot) {
-        // console.log(`Player is now muted`);
-        muteVoice();
-        this.events.emit("playerMuted", true);
-        muteSpot = spot;
-      }
-    };
+    // const handlePlayerInMuteSpot: ArcadePhysicsCallback = (player, spot) => {
+    //   if (muteSpot !== spot) {
+    //     // console.log(`Player is now muted`);
+    //     muteVoice();
+    //     this.events.emit("playerMuted", true);
+    //     muteSpot = spot;
+    //   }
+    // };
 
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
       serverStateData = dataState;
@@ -183,24 +183,25 @@ class GameScene extends Phaser.Scene {
           if (id === socket.id) {
             gameState[id] = new LocalPlayer(this, map, playerData);
             this.cameras.main.startFollow(gameState[id]);
-            conferenceRoomObjs.forEach((room) => {
-              this.physics.add.overlap(
-                gameState[id],
-                room,
-                handlePlayerInConferenceRoom,
-                undefined,
-                null
-              );
-            });
-            muteSpotObjs.forEach((spot) => {
-              this.physics.add.overlap(
-                gameState[id],
-                spot,
-                handlePlayerInMuteSpot,
-                undefined,
-                null
-              );
-            });
+            addSelfVideoToDom(socket.id);
+            // conferenceRoomObjs.forEach((room) => {
+            //   this.physics.add.overlap(
+            //     gameState[id],
+            //     room,
+            //     handlePlayerInConferenceRoom,
+            //     undefined,
+            //     null
+            //   );
+            // });
+            // muteSpotObjs.forEach((spot) => {
+            //   this.physics.add.overlap(
+            //     gameState[id],
+            //     spot,
+            //     handlePlayerInMuteSpot,
+            //     undefined,
+            //     null
+            //   );
+            // });
           } else {
             gameState[id] = new RemotePlayer(this, playerData);
             if (isFirstServerUpdate) {
@@ -213,29 +214,29 @@ class GameScene extends Phaser.Scene {
             (gameState[id] as RemotePlayer).setNewData(playerData);
 
             // Remove Player Audio/Video Volume
-            if (playerData.room || conferenceRoom) {
-              if (playerData.room === conferenceRoom?.name) {
+            // if (playerData.room || conferenceRoom) {
+            //   if (playerData.room === conferenceRoom?.name) {
+            //     changeVolume(id, 1);
+            //     turnAudioIntoVideo(id);
+            //   } else {
+            //     changeVolume(id, 0);
+            //     turnVideoIntoAudio(id);
+            //   }
+            // } else {
+            if (gameState[socket.id]) {
+              const dist = getDistanceBetweenPoints(
+                gameState[socket.id],
+                playerData
+              );
+              if (dist < 150) {
                 changeVolume(id, 1);
-                turnAudioIntoVideo(id);
-              } else {
+              } else if (dist > 350) {
                 changeVolume(id, 0);
-                turnVideoIntoAudio(id);
-              }
-            } else {
-              if (gameState[socket.id]) {
-                const dist = getDistanceBetweenPoints(
-                  gameState[socket.id],
-                  playerData
-                );
-                if (dist < 150) {
-                  changeVolume(id, 1);
-                } else if (dist > 350) {
-                  changeVolume(id, 0);
-                } else {
-                  changeVolume(id, -0.005 * dist + 1.75);
-                }
+              } else {
+                changeVolume(id, -0.005 * dist + 1.75);
               }
             }
+            // }
           }
         }
       });
@@ -254,23 +255,23 @@ class GameScene extends Phaser.Scene {
       return;
     }
 
-    if (conferenceRoom) {
-      if (!this.physics.overlap(conferenceRoom, player)) {
-        // console.log(`Player has left the room`);
-        conferenceRoom = null;
-        removeFromDOM(socket.id);
-        makeAllAudio();
-      }
-    }
+    // if (conferenceRoom) {
+    //   if (!this.physics.overlap(conferenceRoom, player)) {
+    //     // console.log(`Player has left the room`);
+    //     conferenceRoom = null;
+    //     removeFromDOM(socket.id);
+    //     makeAllAudio();
+    //   }
+    // }
 
-    if (muteSpot) {
-      if (!this.physics.overlap(muteSpot, player)) {
-        // console.log(`Player has left the room`);
-        muteSpot = null;
-        this.events.emit("playerMuted", false);
-        unmuteVoice();
-      }
-    }
+    // if (muteSpot) {
+    //   if (!this.physics.overlap(muteSpot, player)) {
+    //     // console.log(`Player has left the room`);
+    //     muteSpot = null;
+    //     this.events.emit("playerMuted", false);
+    //     unmuteVoice();
+    //   }
+    // }
 
     // IF player is moving, change videos opacity
     if (body.velocity.x !== 0 || body.velocity.y !== 0) {
@@ -300,7 +301,10 @@ class GameScene extends Phaser.Scene {
           y: body.y,
           facing,
         };
-        socket.emit("move", { ...lastPos, room: conferenceRoom?.name ?? null });
+        socket.emit("move", {
+          ...lastPos,
+          room: /*conferenceRoom?.name ??*/ null,
+        });
       }
     }
 
