@@ -1,4 +1,41 @@
-import { getUserStream } from "./stream";
+import {
+  getUserStream,
+  muteVoice,
+  unmuteVoice,
+  startVideo,
+  stopVideo,
+} from "./stream";
+
+window.onload = () => {
+  const audioBtn = document.getElementById("mute-audio");
+  const videoBtn = document.getElementById("mute-video");
+
+  let isAudioMuted = false;
+  audioBtn?.addEventListener("click", () => {
+    if (isAudioMuted) {
+      unmuteVoice();
+      audioBtn.innerHTML = "Mute Microphone";
+      isAudioMuted = false;
+    } else {
+      muteVoice();
+      audioBtn.innerHTML = "Unmute Microphone";
+      isAudioMuted = true;
+    }
+  });
+
+  let isVideoMuted = false;
+  videoBtn?.addEventListener("click", () => {
+    if (isVideoMuted) {
+      startVideo();
+      videoBtn.innerHTML = "Stop Video";
+      isVideoMuted = false;
+    } else {
+      stopVideo();
+      videoBtn.innerHTML = "Start Video";
+      isVideoMuted = true;
+    }
+  });
+};
 
 const nodes: Record<string, HTMLAudioElement | HTMLVideoElement> = {};
 

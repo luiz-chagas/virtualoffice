@@ -1,4 +1,4 @@
-import { addAudioToDOM, addVideoToDOM, removeFromDOM } from "./DOM";
+import { addVideoToDOM, removeFromDOM } from "./DOM";
 import { getUserStream } from "./stream";
 
 const connections: Record<string, RTCPeerConnection> = {};
