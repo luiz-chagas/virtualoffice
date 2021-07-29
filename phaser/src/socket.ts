@@ -1,4 +1,5 @@
 import { loadStorage } from "./loadStorage";
+import { io, Socket } from "socket.io-client";
 
 export const connectToServer = () => {
   const socket =
@@ -12,7 +13,7 @@ export const connectToServer = () => {
   return { socket };
 };
 
-export const spawn = (socket: SocketIOClient.Socket, x: number, y: number) => {
+export const spawn = (socket: Socket, x: number, y: number) => {
   const name =
     new URLSearchParams(window.location.search).get("name") || "Anonymous";
   socket.emit("join", {
