@@ -1,163 +1,93 @@
+import { Socket } from "socket.io-client";
+import Peer from "simple-peer";
 import { addVideoToDOM, removeFromDOM } from "./DOM";
 import { getUserStream } from "./stream";
 
-const connections: Record<string, RTCPeerConnection> = {};
+const connections: Record<string, Peer.Instance> = {};
 const peerStreams: Record<string, MediaStream> = {};
 
-export const setupHandlers = (socket: SocketIOClient.Socket) => {
+export const setupHandlers = (socket: Socket) => {
+  socket.on("signal", ({ data, name }: SignalPayload) => {
+    connections[name]?.signal(data);
+  });
+
+  const handleOffer = async ({ name, target }: OfferPayload) => {
+    const myPeerConnection = await createPeerConnection(name, false);
+
+    myPeerConnection.on("signal", (data) => {
+      socket.emit("signal", {
+        target: name,
+        name: target,
+        type: "signal",
+        data,
+      });
+    });
+  };
+
+  socket.on("offer", handleOffer);
+
   const makeOffer = async (target: string) => {
     if (connections[target]) {
       return;
     }
 
-    const myPeerConnection = createPeerConnection(target);
+    const myPeerConnection = await createPeerConnection(target, true);
 
-    myPeerConnection.onnegotiationneeded = async () => {
-      const offer = await myPeerConnection.createOffer();
-      if (myPeerConnection.signalingState !== "stable") {
-        return;
-      }
-      await myPeerConnection.setLocalDescription(offer);
-      socket.emit("rtc-offer", {
-        name: socket.id,
-        target: target,
-        type: "rtc-offer",
-        sdp: myPeerConnection.localDescription,
-      });
-    };
-    myPeerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("new-ice-candidate", {
-          type: "new-ice-candidate",
-          name: socket.id,
-          target: target,
-          candidate: event.candidate,
-        });
-      }
-    };
-  };
-
-  const handleOffer = async ({ name, target, sdp }: OfferPayload) => {
-    const myPeerConnection = createPeerConnection(name);
-    const desc = new RTCSessionDescription(sdp);
-    if (myPeerConnection.signalingState !== "stable") {
-      // Set the local and remove descriptions for rollback; don't proceed
-      // until both return.
-      await Promise.all([
-        myPeerConnection.setLocalDescription({ type: "rollback" }),
-        myPeerConnection.setRemoteDescription(desc),
-      ]);
-      return;
-    } else {
-      await myPeerConnection.setRemoteDescription(desc);
-    }
-    const answer = await myPeerConnection.createAnswer();
-    await myPeerConnection.setLocalDescription(answer);
-    socket.emit("rtc-answer", {
-      name: target,
-      target: name,
-      type: "rtc-answer",
-      sdp: myPeerConnection.localDescription,
+    socket.emit("offer", {
+      target: target,
+      name: socket.id,
+      type: "offer",
     });
 
-    myPeerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("new-ice-candidate", {
-          type: "new-ice-candidate",
-          name: target,
-          target: name,
-          candidate: event.candidate,
-        });
-      }
-    };
-    myPeerConnection.onnegotiationneeded = async () => {
-      const offer = await myPeerConnection.createOffer();
-      if (myPeerConnection.signalingState !== "stable") {
-        return;
-      }
-      await myPeerConnection.setLocalDescription(offer);
-      socket.emit("rtc-offer", {
-        name: target,
-        target: name,
-        type: "rtc-offer",
-        sdp: myPeerConnection.localDescription,
+    myPeerConnection.on("signal", (data) => {
+      socket.emit("signal", {
+        target: target,
+        name: socket.id,
+        type: "signal",
+        data,
       });
-    };
+    });
   };
-
-  socket.on("rtc-offer", handleOffer);
-  socket.on("rtc-answer", handleAnswer);
-  socket.on("new-ice-candidate", handleIceCandidate);
-  socket.on("hang-up", handleHangUp);
 
   return { connectToRTC: makeOffer };
 };
 
-const handleIceCandidate = ({
-  name,
-  candidate,
-}: {
-  name: string;
-  candidate: RTCIceCandidate;
-}) => {
-  connections[name]?.addIceCandidate(new RTCIceCandidate(candidate));
-};
-
-const handleHangUp = ({ userId }: { userId: string }) => {
-  removeFromDOM(userId);
-};
-
-const handleAnswer = ({ name, sdp }: AnswerPayload) => {
-  connections[name]?.setRemoteDescription(new RTCSessionDescription(sdp));
-};
-
-const createPeerConnection = (target: string) => {
+const createPeerConnection = async (target: string, initiator: boolean) => {
   if (connections[target]) {
     return connections[target];
   }
 
-  const connection = new RTCPeerConnection({
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302",
-      },
-    ],
-  });
+  const stream = await getUserStream();
 
-  connections[target] = connection;
+  const peer = new Peer({ initiator, stream });
 
-  connection.ontrack = (data) => {
-    const streamObj =
-      peerStreams[target] || data.streams[0] || new MediaStream();
-    streamObj.addTrack(data.track);
-    peerStreams[target] = streamObj;
-    // addAudioToDOM(target, peerStreams[target]);
+  connections[target] = peer;
+
+  peer.on("stream", (stream) => {
+    peerStreams[target] = stream;
     addVideoToDOM(target, peerStreams[target]);
-  };
-
-  connection.oniceconnectionstatechange = () => {
-    if (["closed", "failed"].includes(connection.iceConnectionState)) {
-      removeFromDOM(target);
-    }
-  };
-
-  getUserStream().then((stream) => {
-    stream.getTracks().forEach((track) => connection.addTrack(track, stream));
   });
 
-  return connection;
+  peer.on("end", () => {
+    removeFromDOM(target);
+  });
+
+  peer.on("close", () => {
+    removeFromDOM(target);
+  });
+
+  return peer;
 };
 
-interface NegotiationPayload {
+interface SignalPayload {
   name: string;
   target: string;
-  sdp: RTCSessionDescription;
+  type: "signal";
+  data: Peer.SignalData;
 }
 
-interface OfferPayload extends NegotiationPayload {
-  type: "rtc-offer";
-}
-
-interface AnswerPayload extends NegotiationPayload {
-  type: "rtc-answer";
+interface OfferPayload {
+  name: string;
+  target: string;
+  type: "offer";
 }

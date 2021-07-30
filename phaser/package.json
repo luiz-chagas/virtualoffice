@@ -10,6 +10,7 @@
   "author": "Luiz Chagas",
   "license": "MIT",
   "devDependencies": {
+    "@types/simple-peer": "^9.11.1",
     "@types/socket.io-client": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^4.28.5",
     "@typescript-eslint/parser": "^4.28.5",
@@ -21,6 +22,7 @@
   },
   "dependencies": {
     "phaser": "^3.50.1",
+    "simple-peer": "^9.11.0",
     "socket.io-client": "^3.0.4"
   }
 }

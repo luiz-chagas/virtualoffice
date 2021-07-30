@@ -1,7 +1,7 @@
-let userStream: MediaStream | null;
-export const getUserStream = async () => {
+let userStream: Promise<MediaStream> | null = null;
+export const getUserStream = () => {
   if (!userStream) {
-    userStream = await navigator.mediaDevices.getUserMedia({
+    userStream = navigator.mediaDevices.getUserMedia({
       audio: {
         autoGainControl: true,
         echoCancellation: true,
@@ -34,5 +34,5 @@ const setVideoEnabled = async (isEnabled: boolean) => {
 
 export const muteVoice = () => setAudioEnabled(false);
 export const unmuteVoice = () => setAudioEnabled(true);
-export const stopVideo = () => setVideoEnabled(false);
+export const stopVideo = async () => setVideoEnabled(false);
 export const startVideo = () => setVideoEnabled(true);
