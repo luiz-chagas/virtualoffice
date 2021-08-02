@@ -18,6 +18,7 @@ app.set("port", port);
 const server = new http.Server(app);
 const socketServer = new io.Server(server, {
   transports: ["websocket"],
+  allowUpgrades: false,
 });
 
 const playerEvents = makePlayersService(socketServer);
