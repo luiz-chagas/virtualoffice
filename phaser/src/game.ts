@@ -89,6 +89,7 @@ class GameScene extends Phaser.Scene {
         furnitureTileset,
         furniture2Tileset,
         furniture3Tileset,
+        medievalTileset,
       ])
       .setCollisionByProperty({ collides: true });
 
@@ -146,7 +147,7 @@ class GameScene extends Phaser.Scene {
     registerAnimations("player4", animationManager);
 
     this.cameras.main
-      .setZoom(2)
+      .setZoom(1.7)
       .setBounds(
         0,
         0,
@@ -345,14 +346,13 @@ new Phaser.Game({
     default: "arcade",
     arcade: {
       debug: process.env.NODE_ENV === "development",
-      height: 704,
-      width: 992,
+      height: 60 * 16,
+      width: 130 * 16,
       fixedStep: false,
       fps: loadStorage("fps") ?? 30,
     },
   },
   fps: {
     target: loadStorage("fps") ?? 30,
-    forceSetTimeOut: true,
   },
 });
