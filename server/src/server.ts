@@ -7,6 +7,7 @@ import { makePlayersService } from "./services/players";
 import { makeSignalingService } from "./services/signaling";
 import { makeSlackService } from "./services/slack";
 import { router } from "./routes";
+import { makeWorldsService } from "./services/worlds";
 
 config();
 
@@ -18,11 +19,14 @@ app.set("port", port);
 const server = new http.Server(app);
 const socketServer = new io.Server(server, {
   transports: ["websocket"],
-  allowUpgrades: false,
+  cors: {
+    origin: "*",
+  },
 });
 
 const playerEvents = makePlayersService(socketServer);
 makeSignalingService(socketServer);
+makeWorldsService(socketServer);
 const { router: slackRouter } = makeSlackService(playerEvents);
 
 registerRouter("/slack", slackRouter);

@@ -32,6 +32,7 @@ const gameState: Record<string, Phaser.Physics.Arcade.Sprite> = {};
 let serverStateData: Record<string, PlayerData> = {};
 const { socket } = connectToServer();
 const { connectToRTC } = setupHandlers(socket);
+const world = loadStorage("world");
 
 class GameScene extends Phaser.Scene {
   constructor() {
@@ -176,9 +177,14 @@ class GameScene extends Phaser.Scene {
     // };
 
     socket.on("stateUpdate", (dataState: Record<string, PlayerData>) => {
-      serverStateData = dataState;
-      this.events.emit("playerCount", Object.keys(dataState).length);
-      Object.entries(dataState).forEach(([id, playerData]) => {
+      serverStateData = Object.fromEntries(
+        Object.entries(dataState).filter(
+          ([_id, playerData]) => playerData.world === world
+        )
+      );
+      this.events.emit("playerCount", Object.keys(serverStateData).length);
+      Object.entries(serverStateData).forEach(([id, playerData]) => {
+        if (playerData.world !== world) return;
         // Handling player creation
         if (!gameState[id]) {
           if (id === socket.id) {

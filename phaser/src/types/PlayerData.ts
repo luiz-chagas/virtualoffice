@@ -6,4 +6,5 @@ export interface PlayerData {
   name: string;
   facing: "north" | "south" | "east" | "west";
   room: string | null;
+  world: string;
 }

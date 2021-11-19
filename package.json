@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/luizjr92/virtualoffice/issues"
   },
-  "homepage": "https://github.com/luizjr92/virtualoffice#readme"
+  "homepage": "https://github.com/luizjr92/virtualoffice#readme",
+  "dependencies": {
+    "socket.io-client": "^4.4.0"
+  }
 }

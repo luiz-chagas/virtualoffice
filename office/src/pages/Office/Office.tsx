@@ -1,10 +1,8 @@
-import { FunctionComponent } from "react";
-
 interface Props {
   name: string;
 }
 
-export const Office: FunctionComponent<Props> = ({ name }) => {
+export const Office = ({ name }: Props) => {
   return (
     <div
       style={{

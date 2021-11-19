@@ -6,11 +6,9 @@ export const connectToServer = () => {
     process.env.NODE_ENV === "development"
       ? io("localhost:8080", {
           transports: ["websocket"],
-          upgrade: false,
         })
       : io({
           transports: ["websocket"],
-          upgrade: false,
         });
   return { socket };
 };
@@ -18,10 +16,17 @@ export const connectToServer = () => {
 export const spawn = (socket: Socket, x: number, y: number) => {
   const name =
     new URLSearchParams(window.location.search).get("name") || "Anonymous";
+
+  const world = loadStorage("world");
+
   socket.emit("join", {
     name,
     x,
     y,
+    world,
     avatar: loadStorage("char"),
+  });
+  socket.emit("joinWorld", {
+    world,
   });
 };

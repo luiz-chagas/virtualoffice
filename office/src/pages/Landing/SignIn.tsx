@@ -1,11 +1,10 @@
-import { Window, Typography, Button } from "react-windows-xp";
+import { Window, Button } from "react-windows-xp";
 import Draggable from "react-draggable";
 import { useFirebase } from "../../hooks/useFirebase";
 import firebase from "firebase/app";
-import { FunctionComponent, useEffect, useRef, useState } from "react";
+import { FunctionComponent, useEffect, useRef } from "react";
 import Logo from "./logo.png";
 import Crema from "./crema.png";
-import { pipe } from "ramda";
 import { load, save } from "../../utils/localStorage";
 
 interface Props {
@@ -13,28 +12,20 @@ interface Props {
 }
 
 export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
-  const [state, setState] = useState<"NORMAL" | "ERROR">("NORMAL");
   const playAudio = Boolean(load("playSound") ?? "true");
 
-  const { user, signIn, signOut } = useFirebase();
+  const { user, signIn } = useFirebase();
   const ref = useRef(null);
 
   useEffect(() => {
     if (user) {
       save("uid", user.uid);
-      if (/@crema.us/.test(user.email ?? "")) {
-        if (playAudio) {
-          new Audio("/logon.mp3").play();
-        }
-        onUserSignedIn(user);
-      } else {
-        setState("ERROR");
-        signOut();
+      if (playAudio) {
+        new Audio("/logon.mp3").play();
       }
+      onUserSignedIn(user);
     }
-  }, [onUserSignedIn, user, signOut, playAudio]);
-
-  const handleSignIn = pipe(() => setState("NORMAL"), signIn);
+  }, [onUserSignedIn, user, playAudio]);
 
   return (
     <Draggable nodeRef={ref}>
@@ -59,13 +50,6 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
               alt="Crema"
             />
           </div>
-          <div style={{ color: "red" }}>
-            <Typography variant="span">
-              {state === "ERROR"
-                ? "Unauthorized Email. Please use your Crema email."
-                : ""}
-            </Typography>
-          </div>
           <div
             style={{
               display: "flex",
@@ -74,7 +58,7 @@ export const SignIn: FunctionComponent<Props> = ({ onUserSignedIn }) => {
               marginBottom: "8px",
             }}
           >
-            <Button onClick={handleSignIn}>Connect</Button>
+            <Button onClick={signIn}>Connect</Button>
           </div>
         </Window>
       </div>

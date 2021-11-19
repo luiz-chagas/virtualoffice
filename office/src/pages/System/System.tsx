@@ -2,11 +2,12 @@ import { Wallpaper } from "react-windows-xp";
 import { Shortcut } from "../../components/Shortcut";
 import Preferences from "./icons/preferences.png";
 import Users from "./icons/users.png";
-import Terminal from "./icons/terminal.png";
+import World from "./icons/world.png";
 import { ErrorAlert } from "../../components/Error";
 import Draggable from "react-draggable";
 import { FunctionComponent, useState } from "react";
 import { SettingsApp } from "../../components/Settings";
+import { OfficesApp } from "../../components/Offices";
 
 interface Props {
   onJoin: () => void;
@@ -16,6 +17,7 @@ interface Props {
 export const System: FunctionComponent<Props> = ({ onJoin, onSignOut }) => {
   const [hasError, setHasError] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showOffices, setShowOffices] = useState(false);
 
   return (
     <Wallpaper fullScreen>
@@ -27,7 +29,14 @@ export const System: FunctionComponent<Props> = ({ onJoin, onSignOut }) => {
           onClick={() => setShowSettings(true)}
           name="Settings"
         />
-        <Shortcut icon={Terminal} onClick={onJoin} name="Crema" />
+        {/* <Shortcut icon={Terminal} onClick={onJoin} name="Crema" /> */}
+        <Shortcut
+          icon={World}
+          onClick={() => {
+            setShowOffices(true);
+          }}
+          name="Virtual Offices"
+        />
         {/* <Shortcut icon={Preferences} onClick={() => void 0} name="Ranking" /> */}
         <Shortcut
           icon={Users}
@@ -48,6 +57,11 @@ export const System: FunctionComponent<Props> = ({ onJoin, onSignOut }) => {
             onClose={() => setShowSettings(false)}
             onSignOut={onSignOut}
           />
+        </div>
+      )}
+      {showOffices && (
+        <div style={{ position: "absolute", top: "30%", left: "30%" }}>
+          <OfficesApp onClose={() => setShowOffices(false)} onJoin={onJoin} />
         </div>
       )}
     </Wallpaper>

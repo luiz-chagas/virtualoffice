@@ -1,9 +1,9 @@
-type Props = "char" | "playSound" | "uid" | "fps";
+type AllowedParams = "char" | "playSound" | "uid" | "fps" | "world";
 
-export const save = (x: Props, data: string | boolean | number) =>
+export const save = (x: AllowedParams, data: string | boolean | number) =>
   localStorage.setItem(x, JSON.stringify(data));
 
-export const load = (x: Props) => {
+export const load = (x: AllowedParams) => {
   try {
     const value = JSON.parse(localStorage.getItem(x) ?? "");
     return value;

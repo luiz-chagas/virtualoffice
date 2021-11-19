@@ -1,4 +1,4 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { EventEmitter } from "events";
 import { log } from "./logger";
 import { propOr, reduceBy, values } from "ramda";
@@ -11,6 +11,7 @@ interface Player {
   avatar: string;
   name: string;
   room: string | null;
+  world: string;
 }
 
 const getRandomAvatar = () => {
@@ -46,7 +47,7 @@ export const makePlayersService = (socketServer: Server) => {
     events.emit("listPlayersRes", result);
   });
 
-  socketServer.on("connection", (socket) => {
+  socketServer.on("connection", (socket: Socket) => {
     socket.on("disconnect", () => {
       log(`${players[socket.id]?.name} has disconnected`);
       removePlayer(socket.id);
@@ -60,12 +61,13 @@ export const makePlayersService = (socketServer: Server) => {
       updatePlayer(socket.id, playerData);
     });
 
-    socket.on("join", ({ name, x, y, avatar }: Player) => {
+    socket.on("join", ({ name, x, y, avatar, world }: Player) => {
       updatePlayer(socket.id, {
         id: socket.id,
         x,
         y,
-        name: name,
+        world,
+        name,
         avatar: avatar ?? getRandomAvatar(),
         facing: "south",
         room: null,
