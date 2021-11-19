@@ -218,7 +218,7 @@ class GameScene extends Phaser.Scene {
         } else {
           if (id !== socket.id) {
             // Update Remote Player Position
-            (gameState[id] as RemotePlayer).setNewData(playerData);
+            (gameState[id] as RemotePlayer)?.setNewData(playerData);
 
             // Remove Player Audio/Video Volume
             // if (playerData.room || conferenceRoom) {
